@@ -8,10 +8,10 @@ from loguru import logger as log
 
 from neptune_cli.client import Client
 
-from neptune_aws_platform.models.api import PutProjectRequest
+from neptune_api.models import PutProjectRequest
 
 
-mcp = FastMCP("Shuttle Impulse MCP")
+mcp = FastMCP("Neptune (neptune.dev) MCP")
 
 
 @mcp.tool("add_new_resource")

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from neptune_cli.config import SETTINGS
 
-from neptune_aws_platform.models.api import (
+from neptune_api.models import (
     PutProjectRequest,
     GetProjectResponse,
     PostDeploymentResponse,

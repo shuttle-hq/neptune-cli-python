@@ -10,7 +10,7 @@ dependencies = [
 	"loguru>=0.7.3",
 	"pydantic-settings>=2.11.0",
 	"requests>=2.32.5",
-	"neptune-aws-platform",
+	"neptune-api",
 ]
 
 [project.optional-dependencies]
@@ -22,7 +22,7 @@ dev = [
 package = true
 
 [tool.uv.sources]
-neptune-aws-platform = { path = "../neptune-aws-platform", editable = true }
+neptune-api = { path = "../neptune-api", editable = true }
 
 [dependency-groups]
 dev = [
