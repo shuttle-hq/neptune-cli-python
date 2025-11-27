@@ -567,7 +567,7 @@ wheels = [
 [[package]]
 name = "neptune-api"
 version = "0.1.0"
-source = { git = "ssh://git@github.com/brokad/neptune-api.git?rev=main#2ed8997b343a3811ca4d4195578787b7a93d1466" }
+source = { git = "ssh://git@github.com/brokad/neptune-api.git?rev=main#613740fe9654885bd915332243b0646da5e80069" }
 dependencies = [
     { name = "pydantic" },
 ]

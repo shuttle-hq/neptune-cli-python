@@ -16,7 +16,7 @@ mcp = FastMCP("Neptune (neptune.dev) MCP")
 
 @mcp.tool("add_new_resource")
 def add_new_resource(kind: str) -> dict[str, Any]:
-    """Get information about resource types that can be provisioned on Shuttle.
+    """Get information about resource types that can be provisioned on Neptune.
 
     IMPORTANT: Always use this tool before modifying 'neptune.json'. This is to ensure your modification is correct.
 
@@ -209,6 +209,34 @@ def deploy_project() -> dict[str, Any]:
     log.info(f"Building image for revision {deployment.revision}...")
     import subprocess
 
+    if (push_token := deployment.push_token) is not None:
+        registry = deployment.image.split("/")[0]
+        login_cmd = [
+            "docker",
+            "login",
+            "-u",
+            "AWS",
+            "--password-stdin",
+            registry,
+        ]
+        login_process = subprocess.Popen(
+            login_cmd,
+            stdin= subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT,
+        )
+        login_process.communicate(input=push_token.encode())
+        if login_process.returncode != 0:
+            log.error("Docker login failed")
+            return {
+                "status": "error",
+                "message": "docker login failed",
+                "registry": registry,
+                "username": "AWS",
+                "password": push_token,
+                "next_step": "ensure your Docker setup is correct and try again",
+            }
+
     build_cmd = [
         "docker",
         "build",
@@ -243,7 +271,7 @@ def deploy_project() -> dict[str, Any]:
     return {
         "deployment_status": "Deployed",
         "deployment_revision": deployment.revision,
-        "next_step": "the deployment was sent to Shuttle's backend, and is now propagating. Investigate the deployment status with 'get_deployment_status'",
+        "next_step": "the deployment was sent to Neptune's backend, and is now propagating. Investigate the deployment status with 'get_deployment_status'",
     }
 
 
