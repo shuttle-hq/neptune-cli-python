@@ -1,0 +1,26 @@
+[hooks]
+enter = ["{{ mise_bin }} install", "uv sync"]
+
+[tools]
+python = "3.13"
+uv = "latest"
+
+[tasks]
+lint = "uv run ruff check . --fix"
+format = "uv run ruff format ."
+sync = "uv sync"
+
+[settings]
+gpg_verify = true
+auto_install = true
+experimental = true
+lockfile = true
+
+[settings.status]
+missing_tools = "always"
+
+[settings.pipx]
+uvx = true
+
+[settings.python]
+uv_venv_auto = true
