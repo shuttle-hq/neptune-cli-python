@@ -1,5 +1,10 @@
 # neptune-cli-python
 
+## Prerequisites
+
+* Python 3.13 or later
+* [uv][uv] 0.9.x
+
 ## Getting Started
 
 Make sure you are also running the `neptune-aws-platform` locally (by default this will look for it at
@@ -50,3 +55,5 @@ By default, the server will be available on http://0.0.0.0:8001/mcp, and the MCP
   }
 }
 ```
+
+[uv]: https://docs.astral.sh/uv/

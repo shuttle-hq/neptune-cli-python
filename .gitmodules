@@ -1,0 +1,3 @@
+[submodule "neptune-api"]
+	path = neptune-api
+	url = https://github.com/shuttle-hq/neptune-api.git
