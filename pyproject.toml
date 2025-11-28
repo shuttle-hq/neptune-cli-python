@@ -10,7 +10,7 @@ dependencies = [
 	"loguru>=0.7.3",
 	"pydantic-settings>=2.11.0",
 	"requests>=2.32.5",
-	"neptune-api @ git+ssh://git@github.com/brokad/neptune-api.git@main",
+	"neptune-api @ git+ssh://git@github.com/shuttle-hq/neptune-api.git@main",
 	"platformdirs>=4.5.0",
 ]
 
