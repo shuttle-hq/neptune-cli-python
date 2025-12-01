@@ -661,6 +661,36 @@ def get_logs() -> dict[str, Any]:
         "next_step": "use these logs to debug your application or monitor its behavior; fix any issues and redeploy as necessary",
     }
 
+@mcp.tool("setup")
+def setup() -> dict[str, Any]:
+    """Setup the current project."""
+    # check if neptune.json
+    # TODO: implement this using 
+    # check if docker is installed and running
+    if not check_docker_installed():
+        return {
+            "status": "error",
+            "message": "Docker is not installed or running.",
+            "next_step": "install Docker and start it",
+        }
+
+    return {
+        "status": "success",
+        "message": "Project setup completed successfully.",
+        "next_step": "use the 'login' command to login to the Neptune Platform",
+    }
+
+def check_docker_installed() -> bool:
+    """Check if docker is installed and running."""
+    import subprocess
+    try:
+        result = subprocess.Popen(["docker", "info"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result.communicate()
+        if result.returncode != 0:
+            return False
+        return True    
+    except Exception as e:
+        return False
 
 if __name__ == "__main__":
     mcp.run()

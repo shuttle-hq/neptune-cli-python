@@ -16,41 +16,7 @@ def cli():
     """AI-native cloud platform for your backend"""
     pass
 
-
-@cli.group()
-def ai():
-    """AI-powered commands for Shuttle"""
-    pass
-
-
-@ai.command()
-def init():
-    """AI-assisted project initialization
-
-    Currently not implemented.
-    """
-    raise NotImplementedError("AI init command is not implemented yet")
-
-
-@ai.command()
-def deploy():
-    """AI-assisted deployment command
-
-    Currently not implemented.
-    """
-    raise NotImplementedError("AI deploy command is not implemented yet")
-
-
-@ai.command()
-def fix():
-    """AI-assisted code fixing command
-
-    Currently not implemented.
-    """
-    raise NotImplementedError("AI fix command is not implemented yet")
-
-
-@ai.command()
+@cli.command()
 @click.option("--transport", "-t", help="Transport to use for MCP", default="stdio")
 @click.option("--host", "-h", help="Host to use for MCP for HTTP transport", default="0.0.0.0")
 @click.option("--port", "-p", help="Port to use for MCP for HTTP transport", default=8001)
