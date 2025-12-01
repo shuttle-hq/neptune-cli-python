@@ -1,34 +1,43 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pathlib import Path
 
 from platformdirs import user_config_dir
-
-from pathlib import Path,PosixPath
-import json
-import os
+from pydantic_settings import (
+    BaseSettings,
+    JsonConfigSettingsSource,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 
 class CLISettings(BaseSettings):
     """Configuration settings for the Neptune CLI."""
 
     # Local development: use `NEPTUNE_API_BASE_URL=http://localhost:8000/v1`
-    api_base_url: str = os.environ.get("NETPUNE_API_BASE_URL", "https://neptune.shuttle.dev/v1")
-    
+    api_base_url: str = "https://neptune.shuttle.dev/v1"
+
     access_token: str | None = None
 
-    class Config:
-        model_config = SettingsConfigDict(
-            env_prefix="NEPTUNE_",
-            json_file=Path(user_config_dir("neptune")) / "config.json",
+    model_config = SettingsConfigDict(
+        env_prefix="NEPTUNE_",
+        json_file=Path(user_config_dir("neptune")) / "config.json",
+    )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            file_secret_settings,
+            JsonConfigSettingsSource(settings_cls),
         )
-
-    json_file: PosixPath | None = Config.model_config.get("json_file")
-    def _read_access_token(json_file: str):
-        with open(json_file, "r") as f:
-            data = json.load(f)
-            return data.get("access_token")
-
-    if json_file and json_file.exists():
-        access_token = _read_access_token(json_file)
 
     def save_to_file(self) -> None:
         """Save the current settings to the configuration file."""
