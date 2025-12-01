@@ -16,7 +16,14 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import toml
+from dotenv import load_dotenv, find_dotenv
 from platformdirs import user_config_dir
+
+# Load .env files - first from global config dir, then from cwd (cwd takes precedence)
+_global_env = Path(user_config_dir("neptune")) / ".env"
+if _global_env.exists():
+    load_dotenv(_global_env)
+load_dotenv(find_dotenv(usecwd=True))
 
 # Default API URLs
 DEFAULT_API_URL = "https://neptune.shuttle.dev/v1"
@@ -37,6 +44,7 @@ class NeptuneConfig:
     ai_url: str | None = None
     api_key: str | None = None
     access_token: str | None = None
+    ai_token: str | None = None
     debug: bool | None = None
 
     def merge_with(self, other: NeptuneConfig) -> NeptuneConfig:
@@ -46,6 +54,7 @@ class NeptuneConfig:
             ai_url=other.ai_url or self.ai_url,
             api_key=other.api_key or self.api_key,
             access_token=other.access_token or self.access_token,
+            ai_token=other.ai_token or self.ai_token,
             debug=other.debug if other.debug is not None else self.debug,
         )
 
@@ -58,12 +67,18 @@ class ResolvedConfig:
     ai_url: str
     api_key: str | None
     access_token: str | None
+    ai_token: str | None
     debug: bool
 
     @property
     def auth_token(self) -> str | None:
         """Get the authentication token (API key or access token)."""
         return self.api_key or self.access_token
+
+    @property
+    def ai_auth_token(self) -> str | None:
+        """Get the authentication token for AI service."""
+        return self.ai_token or self.auth_token
 
 
 def get_global_config_dir() -> Path:
@@ -98,6 +113,7 @@ def load_toml_config(path: Path) -> NeptuneConfig:
             ai_url=data.get("ai_url"),
             api_key=data.get("api_key"),
             access_token=data.get("access_token"),
+            ai_token=data.get("ai_token"),
             debug=data.get("debug"),
         )
     except Exception:
@@ -111,6 +127,7 @@ def load_env_config() -> NeptuneConfig:
         ai_url=os.environ.get("NEPTUNE_AI_URL") or os.environ.get("NEPTUNE_AI"),
         api_key=os.environ.get("NEPTUNE_API_KEY"),
         access_token=os.environ.get("NEPTUNE_ACCESS_TOKEN"),
+        ai_token=os.environ.get("NEPTUNE_AI_TOKEN"),
         debug=_parse_bool_env("NEPTUNE_DEBUG"),
     )
 
@@ -130,6 +147,7 @@ def default_config() -> NeptuneConfig:
         ai_url=DEFAULT_AI_URL,
         api_key=None,
         access_token=None,
+        ai_token=None,
         debug=False,
     )
 
@@ -178,6 +196,7 @@ def load_config(
         ai_url=config.ai_url or DEFAULT_AI_URL,
         api_key=config.api_key,
         access_token=config.access_token,
+        ai_token=config.ai_token,
         debug=config.debug or False,
     )
 
@@ -201,6 +220,7 @@ def save_global_config(config: NeptuneConfig) -> None:
             "ai_url": merged.ai_url,
             "api_key": merged.api_key,
             "access_token": merged.access_token,
+            "ai_token": merged.ai_token,
             "debug": merged.debug,
         }.items()
         if v is not None

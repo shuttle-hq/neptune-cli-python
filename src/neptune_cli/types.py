@@ -27,6 +27,7 @@ class OutputMode(str, Enum):
 class WorkloadKind(str, Enum):
     """Type of workload."""
 
+    SERVICE = "Service"
     BACKEND = "Backend"
     ETL_JOB = "ETLJob"
     UNKNOWN = "Unknown"
@@ -36,7 +37,7 @@ class ResourceKind(str, Enum):
     """Type of resource."""
 
     DATABASE = "Database"
-    OBJECT_STORAGE_BUCKET = "ObjectStorageBucket"
+    STORAGE_BUCKET = "StorageBucket"
     SECRET = "Secret"
     UNKNOWN = "Unknown"
 

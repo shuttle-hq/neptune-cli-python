@@ -26,6 +26,23 @@ neptune deploy
 neptune status
 ```
 
+## Configuration
+
+The CLI can be configured via environment variables or a `.env` file:
+
+| Variable | Description |
+| -------- | ----------- |
+| `NEPTUNE_AI_TOKEN` | API token for AI service (spec generation, linting) |
+| `NEPTUNE_API_KEY` | API key for Neptune platform |
+| `NEPTUNE_API_URL` | Override platform API URL |
+| `NEPTUNE_AI_URL` | Override AI service URL |
+
+Create a `.env` file in your project directory or `~/.config/neptune/.env`:
+
+```bash
+NEPTUNE_AI_TOKEN=your_token_here
+```
+
 ## MCP Server
 
 For AI assistants (Cursor, VS Code, etc.):

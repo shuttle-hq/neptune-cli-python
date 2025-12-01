@@ -57,6 +57,17 @@ class Client:
             headers["Authorization"] = f"Bearer {token}"
         return headers
 
+    def _get_ai_headers(self) -> dict[str, str]:
+        """Generate headers with authentication for AI service."""
+        headers = {
+            "X-Neptune-CLI-Version": CLI_VERSION,
+            "Content-Type": "application/json",
+        }
+        token = self.config.ai_auth_token
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        return headers
+
     def _mk_url(self, path: str) -> str:
         """Build platform API URL."""
         return f"{self.api_base_url}/{path.lstrip('/')}"
@@ -265,7 +276,7 @@ class Client:
         """Get the AGENTS.md content from AI service."""
         response = requests.get(
             self._mk_ai_url("/v1/agents.md"),
-            headers=self._get_headers(),
+            headers=self._get_ai_headers(),
             timeout=self.ai_timeout,
         )
         response.raise_for_status()
@@ -283,7 +294,7 @@ class Client:
         """
         from neptune_cli.types import Spec
 
-        headers = self._get_headers()
+        headers = self._get_ai_headers()
         del headers["Content-Type"]  # Let requests set multipart content-type
 
         response = requests.post(
@@ -308,7 +319,7 @@ class Client:
         """
         from neptune_cli.types import GenerateResponse
 
-        headers = self._get_headers()
+        headers = self._get_ai_headers()
         del headers["Content-Type"]  # Let requests set multipart content-type
 
         response = requests.post(
@@ -332,7 +343,7 @@ class Client:
         """
         from neptune_cli.types import AiLintReport
 
-        headers = self._get_headers()
+        headers = self._get_ai_headers()
         del headers["Content-Type"]  # Let requests set multipart content-type
 
         response = requests.post(
