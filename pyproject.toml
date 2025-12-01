@@ -8,16 +8,17 @@ dependencies = [
 	"click>=8.1.0",
 	"fastmcp>=2.13.0.2",
 	"loguru>=0.7.3",
+	"pydantic>=2.0.0",
 	"pydantic-settings>=2.11.0",
 	"requests>=2.32.5",
 	"neptune-api",
 	"platformdirs>=4.5.0",
+	"rich>=13.0.0",
+	"toml>=0.10.0",
 ]
 
 [project.optional-dependencies]
-dev = [
-	"pytest",
-]
+dev = ["pytest"]
 
 [build-system]
 requires = ["uv_build>=0.9.13,<0.10.0"]
@@ -27,9 +28,7 @@ build-backend = "uv_build"
 neptune-api = { path = "./neptune-api" }
 
 [dependency-groups]
-dev = [
-    "ruff>=0.14.6",
-]
+dev = ["ruff>=0.14.6"]
 
 [project.scripts]
 neptune = "neptune_cli.cli:cli"

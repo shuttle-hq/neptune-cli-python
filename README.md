@@ -1,22 +1,40 @@
-# neptune-cli-python
+# Neptune CLI
 
-## Prerequisites
+Command-line interface for Neptune - deploy your backend to the cloud.
 
-* Python 3.13 or later
-* [uv][uv] 0.9.x
+## Installation
 
-## Getting Started
+Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 
-Make sure you are also running the `neptune-aws-platform` locally (by default this will look for it at
-`localhost:8000`).
+```bash
+uv tool install -e .
+```
 
-1. Usual steps to setup a uv-managed env.
-2. `uv run neptune login` - follow the flow through GH to get an access token. It will be saved and used by the MCP tool
-   calls.
-3. Install the MCP server in a workspace using your IDE's doc. The command you need to have run is `neptune ai mcp`. You
-   might need to restart the server if you've logged in after setting the MCP server up.
+## Quick Start
 
-For example, for VSCode:
+```bash
+# Login to Neptune
+neptune login
+
+# Initialize a new project
+neptune init
+
+# Deploy
+neptune deploy
+
+# Check status
+neptune status
+```
+
+## MCP Server
+
+For AI assistants (Cursor, VS Code, etc.):
+
+```bash
+neptune mcp
+```
+
+### Cursor/VS Code Configuration
 
 ```json
 {
@@ -24,36 +42,72 @@ For example, for VSCode:
     "neptune": {
       "type": "stdio",
       "command": "uv",
-      "args": [
-        "run",
-        "--project",
-        "PATH_TO_NEPTUNE_CLI",
-        "neptune",
-        "ai",
-        "mcp"
-      ]
+      "args": ["run", "--project", "PATH_TO_NEPTUNE_CLI", "neptune", "mcp"]
     }
   },
   "inputs": []
 }
 ```
 
-Alternatively, you can run the MCP server with HTTP transport and let your local IDE connect to it:
+Or with HTTP transport:
 
-```shell
-uv run neptune ai mcp --transport=http
+```bash
+neptune mcp --transport http --port 8001
 ```
-
-By default, the server will be available on http://0.0.0.0:8001/mcp, and the MCP configuration for Cursor will be:
 
 ```json
 {
   "mcpServers": {
     "neptune": {
-      "url": "http://0.0.0.0:8001/mcp"
+      "url": "http://localhost:8001/mcp"
     }
   }
 }
 ```
 
-[uv]: https://docs.astral.sh/uv/
+## Architecture
+
+```
+┌─────────────┐     ┌─────────────┐
+│     CLI     │     │     MCP     │
+│  (click)    │     │  (fastmcp)  │
+└──────┬──────┘     └──────┬──────┘
+       │                   │
+       └─────────┬─────────┘
+                 │
+         ┌───────▼───────┐
+         │   Services    │
+         │ (business     │
+         │  logic)       │
+         └───────┬───────┘
+                 │
+         ┌───────▼───────┐
+         │    Client     │
+         │  (API calls)  │
+         └───────────────┘
+```
+
+- **Services** (`src/neptune_cli/services/`) contain all business logic
+- **CLI** commands handle user interaction and output formatting
+- **MCP** tools expose the same functionality to AI assistants
+- Both CLI and MCP call the shared service layer, ensuring consistent behavior
+
+## Commands
+
+| Command      | Description                            |
+| ------------ | -------------------------------------- |
+| `login`      | Authenticate with Neptune              |
+| `logout`     | Log out                                |
+| `init`       | Initialize a new project               |
+| `deploy`     | Build and deploy                       |
+| `status`     | Show deployment status                 |
+| `logs`       | View deployment logs                   |
+| `wait`       | Wait for deployment to complete        |
+| `list`       | List all projects                      |
+| `delete`     | Delete a project                       |
+| `resource`   | Manage databases, buckets, secrets     |
+| `generate`   | Generate specs, shell completions, etc |
+| `lint`       | Run AI linter on project               |
+| `dockerfile` | Get Dockerfile guidance                |
+| `schema`     | Show neptune.json schema               |
+| `mcp`        | Start MCP server for AI assistants     |
