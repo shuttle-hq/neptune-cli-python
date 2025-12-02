@@ -31,17 +31,22 @@ class Client:
         return headers
 
     def create_project(self, request: PutProjectRequest) -> None:
-        requests.post(self._mk_url("/project"), json=request.model_dump(mode="json"), headers=self._get_headers())
+        response = requests.post(
+            self._mk_url("/project"), json=request.model_dump(mode="json"), headers=self._get_headers()
+        )
+        response.raise_for_status()
 
     def update_project(self, request: PutProjectRequest) -> None:
-        requests.put(
+        response = requests.put(
             self._mk_url(f"/project/{request.name}"),
             json=request.model_dump(mode="json"),
             headers=self._get_headers(),
         )
+        response.raise_for_status()
 
     def delete_project(self, project_name: str) -> None:
-        requests.delete(self._mk_url(f"/project/{project_name}"), headers=self._get_headers())
+        response = requests.delete(self._mk_url(f"/project/{project_name}"), headers=self._get_headers())
+        response.raise_for_status()
 
     def get_project(self, project_name: str) -> GetProjectResponse | None:
         response = requests.get(self._mk_url(f"/project/{project_name}"), headers=self._get_headers())
