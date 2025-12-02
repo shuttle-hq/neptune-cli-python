@@ -260,6 +260,49 @@ def provision_resources(neptune_json_path: str) -> dict[str, Any]:
     }
 
 
+@mcp.tool("delete_project")
+def delete_project(neptune_json_path: str) -> dict[str, Any]:
+    """Delete a project and all its resources.
+
+    WARNING: This permanently deletes the project and all associated resources
+    including databases, storage buckets, and secrets. This action cannot be undone.
+    """
+    client = Client()
+
+    if validation_result := validate_neptune_json(neptune_json_path):
+        return validation_result
+
+    with open(neptune_json_path, "r") as f:
+        project_data = f.read()
+
+    project_request = PutProjectRequest.model_validate_json(project_data)
+    project_name = project_request.name
+
+    # Check if project exists first
+    project = client.get_project(project_name)
+    if project is None:
+        return {
+            "status": "error",
+            "message": f"Project '{project_name}' not found.",
+            "next_step": "Check the project name and try again.",
+        }
+
+    try:
+        client.delete_project(project_name)
+        log.info(f"Project '{project_name}' deleted successfully")
+        return {
+            "status": "success",
+            "message": f"Project '{project_name}' and all its resources have been permanently deleted.",
+        }
+    except Exception as e:
+        log.error(f"Failed to delete project '{project_name}': {e}")
+        return {
+            "status": "error",
+            "message": f"Failed to delete project '{project_name}': {e}",
+            "next_step": "Check the error and try again.",
+        }
+
+
 @mcp.tool("deploy_project")
 def deploy_project(neptune_json_path: str) -> dict[str, Any]:
     """Deploy the current project.
