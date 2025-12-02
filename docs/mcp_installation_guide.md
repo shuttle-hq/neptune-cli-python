@@ -413,11 +413,11 @@ Edit `~/.warp/mcp.json`:
 
 | IDE / Tool          |      macOS      |      Linux      |          Windows          |
 | ------------------- | :-------------: | :-------------: | :-----------------------: |
-| **Cursor**          |    ✅ stdio     |    ✅ stdio     |    ✅ stdio (via cmd)     |
-| **Claude Desktop**  |    ✅ stdio     |    ✅ stdio     |    ✅ stdio (via cmd)     |
-| **VS Code (Cline)** |    ✅ stdio     |    ✅ stdio     |    ✅ stdio (via cmd)     |
+| **Cursor**          | ✅ stdio / HTTP | ✅ stdio / HTTP | ✅ stdio (via cmd) / HTTP |
+| **Claude Desktop**  | ✅ stdio / HTTP | ✅ stdio / HTTP | ✅ stdio (via cmd) / HTTP |
+| **VS Code (Cline)** | ✅ stdio / HTTP | ✅ stdio / HTTP | ✅ stdio (via cmd) / HTTP |
 | **JetBrains**       | ✅ stdio / HTTP | ✅ stdio / HTTP | ✅ stdio (via cmd) / HTTP |
-| **Warp**            |    ✅ stdio     |    ✅ stdio     |     ❌ Not available      |
+| **Warp**            | ✅ stdio / HTTP | ✅ stdio / HTTP |     ❌ Not available      |
 
 ---
 
@@ -476,13 +476,8 @@ uvx --isolated --from git+https://github.com/shuttle-hq/neptune-cli-python.git n
 
 Press `Ctrl+C` to stop the server.
 
-### Getting Help
-
--   Check the [Neptune CLI repository](https://github.com/shuttle-hq/neptune-cli-python) for updates
--   File issues on GitHub for bugs or feature requests
-
 ---
 
 ## Next Steps
 
-After installing the Neptune MCP, you can use it within your chosen coding agent, just ask!
+After installing the Neptune MCP, you can use it within your chosen coding agent - just ask!
