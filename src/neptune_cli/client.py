@@ -4,6 +4,8 @@ from dataclasses import dataclass
 
 from neptune_cli.config import SETTINGS
 
+from typing import Any
+
 from neptune_api.models import (
     PutProjectRequest,
     GetProjectResponse,
@@ -29,7 +31,7 @@ class Client:
         return headers
 
     def create_project(self, request: PutProjectRequest) -> None:
-        requests.post(self._mk_url(f"/project"), json=request.model_dump(mode="json"), headers=self._get_headers())
+        requests.post(self._mk_url("/project"), json=request.model_dump(mode="json"), headers=self._get_headers())
 
     def update_project(self, request: PutProjectRequest) -> None:
         requests.put(
@@ -51,9 +53,7 @@ class Client:
         response = requests.post(self._mk_url(f"/project/{project_name}/deploy"), headers=self._get_headers())
         return PostDeploymentResponse.model_validate(response.json())
 
-    def get_deployment(
-        self, project_name: str, revision: str | int = "latest"
-    ) -> PostDeploymentResponse:
+    def get_deployment(self, project_name: str, revision: str | int = "latest") -> PostDeploymentResponse:
         response = requests.get(
             self._mk_url(f"/project/{project_name}/deploy/{revision}"),
             headers=self._get_headers(),
@@ -85,13 +85,21 @@ class Client:
         )
         return response.content
 
-    def get_database_connection_info(
-        self, project_name: str, database_name: str
-    ) -> GetDatabaseConnectionInfoResponse:
+    def get_database_connection_info(self, project_name: str, database_name: str) -> GetDatabaseConnectionInfoResponse:
         response = requests.get(
-            self._mk_url(
-                f"/project/{project_name}/database/{database_name}/connection-info"
-            ),
+            self._mk_url(f"/project/{project_name}/database/{database_name}/connection-info"),
             headers=self._get_headers(),
         )
         return GetDatabaseConnectionInfoResponse.model_validate(response.json())
+
+    def get_project_schema(self) -> dict[str, Any]:
+        """Get the JSON schema that defines valid neptune.json configurations.
+
+        Returns:
+            JSON schema definition for project configuration (neptune.json)
+        """
+        response = requests.get(
+            self._mk_url("/schema/project"),
+            headers=self._get_headers(),
+        )
+        return response.json()

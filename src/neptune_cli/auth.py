@@ -3,6 +3,7 @@ def serve_callback_handler():
     import threading
 
     """Start a local HTTP server to wait for the OAuth callback"""
+
     class CallbackHandler(BaseHTTPRequestHandler):
         def do_GET(self):
             self.send_response(200)
@@ -11,6 +12,7 @@ def serve_callback_handler():
             self.wfile.write(b"Login successful! You can close this window.")
             # Extract access token from the URL "token" query parameter
             from urllib.parse import urlparse, parse_qs
+
             query_components = parse_qs(urlparse(self.path).query)
             if "token" in query_components:
                 access_token = query_components["token"][0]
@@ -18,7 +20,7 @@ def serve_callback_handler():
             else:
                 self.server.access_token = None
             self.server.callback_received = True
-        
+
         def log_message(self, format, *args):
             return  # Suppress logging
 

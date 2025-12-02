@@ -16,6 +16,7 @@ def cli():
     """AI-native cloud platform for your backend"""
     pass
 
+
 @cli.command()
 @click.option("--transport", "-t", help="Transport to use for MCP", default="stdio")
 @click.option("--host", "-h", help="Host to use for MCP for HTTP transport", default="0.0.0.0")
@@ -70,9 +71,7 @@ def status():
 
     log.info(f"Project '{project.name}' status: {project.state}")
     for resource in project.resources:
-        log.info(
-            f" - Resource '{resource.name}' ({resource.kind}) status: {resource.status}"
-        )
+        log.info(f" - Resource '{resource.name}' ({resource.kind}) status: {resource.status}")
     for service, status in project.service_status.items():
         log.info(f" - Service '{service}' status: {status}")
 
@@ -85,15 +84,15 @@ def logs():
 
 @cli.command()
 def login():
-    """Authenticate with Neptune
-    """
+    """Authenticate with Neptune"""
     port, httpd, thread = serve_callback_handler()
-    
+
     import webbrowser
 
     from urllib.parse import urlencode
+
     params = urlencode({"redirect_uri": f"http://localhost:{port}/callback"})
-    
+
     login_url = f"{SETTINGS.api_base_url}/auth/login?{params}"
     if not webbrowser.open(login_url):
         print("Please open the following URL in a browser to log in:")

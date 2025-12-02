@@ -1,7 +1,7 @@
 import os
 import time
-
-from typing import Any, Literal
+from pathlib import Path
+from typing import Any
 
 from fastmcp import Context, FastMCP
 from loguru import logger as log
@@ -11,10 +11,20 @@ from neptune_cli.client import Client
 from neptune_api.models import PutProjectRequest
 
 
-mcp = FastMCP("Neptune (neptune.dev) MCP")
+def _load_instructions() -> str:
+    """Load MCP instructions from the instructions file."""
+    instructions_path = Path(__file__).parent / "mcp_instructions.md"
+    return instructions_path.read_text()
 
 
-def validate_neptune_json(neptune_json_path: str) -> dict[str, Any]:
+mcp = FastMCP("Neptune (neptune.dev) MCP", instructions=_load_instructions())
+
+
+def validate_neptune_json(neptune_json_path: str) -> dict[str, Any] | None:
+    """Validate that neptune.json exists at the given path.
+
+    Returns an error dict if the file doesn't exist, None otherwise.
+    """
     if not os.path.exists(neptune_json_path):
         log.error(f"neptune.json not found at {neptune_json_path}")
         return {
@@ -22,6 +32,43 @@ def validate_neptune_json(neptune_json_path: str) -> dict[str, Any]:
             "message": f"neptune.json not found at {neptune_json_path}",
             "next_step": f"make sure a 'neptune.json' file exists at {neptune_json_path}",
         }
+    return None
+
+
+@mcp.tool("get_project_schema")
+def get_project_schema() -> dict[str, Any]:
+    """Get the JSON schema that defines how to create a valid neptune.json file.
+
+    IMPORTANT: Use this tool BEFORE creating or modifying 'neptune.json' to ensure
+    the configuration is valid.
+
+    This schema defines the exact structure and constraints for neptune.json files:
+    - Required fields (kind, name)
+    - Optional fields (resources, port_mappings, cpu, memory)
+    - Valid resource types (Database, StorageBucket, Secret) and their properties
+    - Allowed values for each field
+
+    The returned schema is a standard JSON Schema that you should use as the
+    authoritative reference when generating neptune.json configurations.
+    """
+    client = Client()
+
+    try:
+        schema = client.get_project_schema()
+        return {
+            "status": "success",
+            "schema": schema,
+            "purpose": "Use this schema as the authoritative reference when creating or modifying neptune.json files",
+            "next_step": "Create a valid neptune.json based on this schema, then use 'provision_resources' to provision the infrastructure",
+        }
+    except Exception as e:
+        log.error(f"Failed to fetch project schema: {e}")
+        return {
+            "status": "error",
+            "message": f"Failed to fetch project schema: {e}",
+            "next_step": "Ensure you are logged in with valid credentials",
+        }
+
 
 @mcp.tool("add_new_resource")
 def add_new_resource(kind: str) -> dict[str, Any]:
@@ -150,9 +197,7 @@ def provision_resources(neptune_json_path: str) -> dict[str, Any]:
         for resource in project.resources:
             if resource.status == "Pending":
                 all_provisioned = False
-                log.info(
-                    f"Resource '{resource.name}' ({resource.kind}) status: {resource.status}. Waiting..."
-                )
+                log.info(f"Resource '{resource.name}' ({resource.kind}) status: {resource.status}. Waiting...")
         if not all_provisioned:
             time.sleep(2)
             project = client.get_project(project_request.name)
@@ -162,9 +207,7 @@ def provision_resources(neptune_json_path: str) -> dict[str, Any]:
         "infrastructure_status": "ready",
         "message": "all the resources required by the project have been provisioned, and it is ready for deployment",
         "next_step": "deploy the project using the 'deploy_project' command; note how each resource should be used by inspecting their descriptions in this response",
-        "infrastructure_resources": [
-            resource.model_dump() for resource in project.resources
-        ],
+        "infrastructure_resources": [resource.model_dump() for resource in project.resources],
     }
 
 
@@ -197,9 +240,7 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
     try:
         deployment = client.create_deployment(project_request.name)
     except Exception as e:
-        log.error(
-            f"Failed to create deployment for project '{project_request.name}': {e}"
-        )
+        log.error(f"Failed to create deployment for project '{project_request.name}': {e}")
         return {
             "status": "error",
             "message": f"failed to create deployment for project '{project_request.name}': {e}",
@@ -222,7 +263,7 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
         ]
         login_process = subprocess.Popen(
             login_cmd,
-            stdin= subprocess.PIPE,
+            stdin=subprocess.PIPE,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.STDOUT,
             cwd=project_dir,
@@ -250,23 +291,17 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
         "Dockerfile",
         ".",
     ]
-    subprocess.run(
-        build_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, cwd=project_dir
-    )
-    log.info(f"Image built successfully")
+    subprocess.run(build_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, cwd=project_dir)
+    log.info("Image built successfully")
 
     log.info(f"Pushing image for revision {deployment.revision}...")
     push_cmd = ["docker", "push", deployment.image]
-    subprocess.run(
-        push_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, cwd=project_dir
-    )
+    subprocess.run(push_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, cwd=project_dir)
 
     # while deployment.status is not "Deployed", poll every 2 seconds
     while deployment.status != "Deployed":
         time.sleep(2)
-        deployment = client.get_deployment(
-            project_request.name, revision=deployment.revision
-        )
+        deployment = client.get_deployment(project_request.name, revision=deployment.revision)
 
     log.info(f"Revision {deployment.revision} deployed successfully")
 
@@ -285,7 +320,6 @@ def get_deployment_status(neptune_json_path: str) -> dict[str, Any]:
     """
     client = Client()
 
-    
     if validation_result := validate_neptune_json(neptune_json_path):
         return validation_result
 
@@ -309,9 +343,7 @@ def get_deployment_status(neptune_json_path: str) -> dict[str, Any]:
     return {
         "infrastructure_provisioning_status": project.provisioning_state,
         "service_running_status": project.running_status.model_dump(),
-        "infrastructure_resources": [
-            resource.model_dump() for resource in project.resources
-        ],
+        "infrastructure_resources": [resource.model_dump() for resource in project.resources],
         "next_steps": "use this information to monitor the deployment status; if there are issues, check the logs and redeploy as necessary",
     }
 
@@ -348,26 +380,18 @@ async def set_secret_value(ctx: Context, neptune_json_path: str, secret_name: st
         }
 
     secret_resource = next(
-        (
-            res
-            for res in project.resources
-            if res.kind == "Secret" and res.name == secret_name
-        ),
+        (res for res in project.resources if res.kind == "Secret" and res.name == secret_name),
         None,
     )
     if secret_resource is None:
-        log.error(
-            f"Secret resource '{secret_name}' not found in project '{project_name}'"
-        )
+        log.error(f"Secret resource '{secret_name}' not found in project '{project_name}'")
         return {
             "status": "error",
             "message": f"Secret resource '{secret_name}' not found in project '{project_name}'",
             "next_step": "ensure the secret is defined in 'neptune.json' and provisioned with 'provision_resources'",
         }
 
-    result = await ctx.elicit(
-        message="Please provide the secret's value:", response_type=str
-    )
+    result = await ctx.elicit(message="Please provide the secret's value:", response_type=str)
 
     if result.action == "accept":
         secret_value = result.data
@@ -423,17 +447,11 @@ def get_database_connection_info(neptune_json_path: str, database_name: str) -> 
         }
 
     database_resource = next(
-        (
-            res
-            for res in project.resources
-            if res.kind == "Database" and res.name == database_name
-        ),
+        (res for res in project.resources if res.kind == "Database" and res.name == database_name),
         None,
     )
     if database_resource is None:
-        log.error(
-            f"Database resource '{database_name}' not found in project '{project_name}'"
-        )
+        log.error(f"Database resource '{database_name}' not found in project '{project_name}'")
         return {
             "status": "error",
             "message": f"Database resource '{database_name}' not found in project '{project_name}'",
@@ -478,17 +496,11 @@ def list_bucket_files(neptune_json_path: str, bucket_name: str) -> dict[str, Any
         }
 
     bucket_resource = next(
-        (
-            res
-            for res in project.resources
-            if res.kind == "StorageBucket" and res.name == bucket_name
-        ),
+        (res for res in project.resources if res.kind == "StorageBucket" and res.name == bucket_name),
         None,
     )
     if bucket_resource is None:
-        log.error(
-            f"Storage bucket resource '{bucket_name}' not found in project '{project_name}'"
-        )
+        log.error(f"Storage bucket resource '{bucket_name}' not found in project '{project_name}'")
         return {
             "status": "error",
             "message": f"Storage bucket resource '{bucket_name}' not found in project '{project_name}'",
@@ -534,17 +546,11 @@ def get_bucket_object(neptune_json_path: str, bucket_name: str, key: str) -> dic
         }
 
     bucket_resource = next(
-        (
-            res
-            for res in project.resources
-            if res.kind == "StorageBucket" and res.name == bucket_name
-        ),
+        (res for res in project.resources if res.kind == "StorageBucket" and res.name == bucket_name),
         None,
     )
     if bucket_resource is None:
-        log.error(
-            f"Storage bucket resource '{bucket_name}' not found in project '{project_name}'"
-        )
+        log.error(f"Storage bucket resource '{bucket_name}' not found in project '{project_name}'")
         return {
             "status": "error",
             "message": f"Storage bucket resource '{bucket_name}' not found in project '{project_name}'",
@@ -600,9 +606,7 @@ def wait_for_deployment(neptune_json_path: str) -> dict[str, Any]:
     return {
         "infrastructure_provisioning_status": project.provisioning_state,
         "service_running_status": project.running_status.model_dump(),
-        "infrastructure_resources": [
-            resource.model_dump() for resource in project.resources
-        ],
+        "infrastructure_resources": [resource.model_dump() for resource in project.resources],
         "next_steps": "use this information to monitor the deployment status; if there are issues, check the logs and redeploy as necessary",
     }
 
