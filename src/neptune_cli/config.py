@@ -13,7 +13,7 @@ class CLISettings(BaseSettings):
     """Configuration settings for the Neptune CLI."""
 
     # Local development: use `NEPTUNE_API_BASE_URL=http://localhost:8000/v1`
-    api_base_url: str = "https://neptune.shuttle.dev/v1"
+    api_base_url: str = "https://beta.neptune.dev/v1"
 
     access_token: str | None = None
 
