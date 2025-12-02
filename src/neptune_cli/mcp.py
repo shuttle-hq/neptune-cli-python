@@ -45,7 +45,7 @@ def get_project_schema() -> dict[str, Any]:
     This schema defines the exact structure and constraints for neptune.json files:
     - Required fields (kind, name)
     - Optional fields (resources, port_mappings, cpu, memory)
-    - Valid resource types (Database, StorageBucket, Secret) and their properties
+    - Valid resource types (StorageBucket, Secret) and their properties
     - Allowed values for each field
 
     The returned schema is a standard JSON Schema that you should use as the
@@ -125,25 +125,9 @@ def add_new_resource(kind: str) -> dict[str, Any]:
 
     IMPORTANT: Always use this tool before modifying 'neptune.json'. This is to ensure your modification is correct.
 
-    Valid 'kind' are: "StorageBucket", "Database" and "Secret".
+    Valid 'kind' are: "StorageBucket" and "Secret".
     """
-    if kind == "Database":
-        return {
-            "description": "Managed database instances for your applications.",
-            "neptune_json_configuration": """
-To add a database to a project, add the following to 'resources' in 'neptune.json':
-```json
-{
-    "kind": "Database",
-    "name": "<database_name>"
-}
-```
-""",
-            "example_code_usage": """
-See resource description returned from `get_deployment_status` after provisioning the database.
-""",
-        }
-    elif kind == "StorageBucket":
+    if kind == "StorageBucket":
         return {
             "description": "Backend is a plain AWS S3 bucket.",
             "neptune_json_configuration": """
@@ -203,7 +187,7 @@ secret = response['SecretString']
     else:
         return {
             "error": "Unknown resource kind",
-            "message": f"The resource kind '{kind}' is not recognized. Valid kind are 'StorageBucket' and 'Database'.",
+            "message": f"The resource kind '{kind}' is not recognized. Valid kind are 'StorageBucket' and 'Secret'.",
         }
 
 
@@ -265,7 +249,7 @@ def delete_project(neptune_json_path: str) -> dict[str, Any]:
     """Delete a project and all its resources.
 
     WARNING: This permanently deletes the project and all associated resources
-    including databases, storage buckets, and secrets. This action cannot be undone.
+    including storage buckets and secrets. This action cannot be undone.
     """
     client = Client()
 
@@ -311,7 +295,7 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
 
     UNDER THE HOOD: deployments are ECS tasks running on Fargate, with images stored in ECR. In particular, this tool builds an image using the Dockerfile in the current directory.
 
-    Note: running tasks are *not* persistent; if the task stops or is redeployed, all data stored in the container is lost. Use provisioned resources (databases, storage buckets, etc.) for persistent data storage.
+    Note: running tasks are *not* persistent; if the task stops or is redeployed, all data stored in the container is lost. Use provisioned resources (storage buckets, etc.) for persistent data storage.
     """
     client = Client()
 
@@ -506,55 +490,6 @@ async def set_secret_value(ctx: Context, neptune_json_path: str, secret_name: st
         "status": "success",
         "message": f"Secret '{secret_name}' set successfully for project '{project_name}'.",
         "next_step": "redeploy the project if necessary to use the updated secret value with 'deploy_project'",
-    }
-
-
-@mcp.tool("get_database_connection_info")
-def get_database_connection_info(neptune_json_path: str, database_name: str) -> dict[str, Any]:
-    """Get the connection information for a database resource for the current project.
-
-    Note the database must already exist in the neptune.json configuration of the project.
-    It must also be provisioned using 'provision_resources' before retrieving its connection info.
-    """
-    client = Client()
-
-    if validation_result := validate_neptune_json(neptune_json_path):
-        return validation_result
-
-    with open(neptune_json_path, "r") as f:
-        project_data = f.read()
-
-    from neptune_api import PutProjectRequest
-
-    project_request = PutProjectRequest.model_validate_json(project_data)
-    project_name = project_request.name
-
-    project = client.get_project(project_name)
-    if project is None:
-        log.error(f"Project '{project_name}' not found; was it deployed?")
-        return {
-            "status": "error",
-            "message": f"Project '{project_name}' not found; did you deploy it?",
-            "next_step": "deploy the project using the 'deploy_project' command",
-        }
-
-    database_resource = next(
-        (res for res in project.resources if res.kind == "Database" and res.name == database_name),
-        None,
-    )
-    if database_resource is None:
-        log.error(f"Database resource '{database_name}' not found in project '{project_name}'")
-        return {
-            "status": "error",
-            "message": f"Database resource '{database_name}' not found in project '{project_name}'",
-            "next_step": "ensure the database is defined in 'neptune.json' and provisioned with 'provision_resources'",
-        }
-
-    conn_info = client.get_database_connection_info(project_name, database_name)
-
-    return {
-        "database_connection_info": conn_info.model_dump(),
-        "next_step": "use this connection information to connect to your database from your application or management tools; remember the token expires after 15 minutes so do not use it for programmatic access - only for local testing.",
     }
 
 

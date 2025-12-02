@@ -12,7 +12,6 @@ from neptune_api.models import (
     PostDeploymentResponse,
     GetLogsResponse,
     ListBucketKeysResponse,
-    GetDatabaseConnectionInfoResponse,
 )
 
 
@@ -89,13 +88,6 @@ class Client:
             headers=self._get_headers(),
         )
         return response.content
-
-    def get_database_connection_info(self, project_name: str, database_name: str) -> GetDatabaseConnectionInfoResponse:
-        response = requests.get(
-            self._mk_url(f"/project/{project_name}/database/{database_name}/connection-info"),
-            headers=self._get_headers(),
-        )
-        return GetDatabaseConnectionInfoResponse.model_validate(response.json())
 
     def get_project_schema(self) -> dict[str, Any]:
         """Get the JSON schema that defines valid neptune.json configurations.

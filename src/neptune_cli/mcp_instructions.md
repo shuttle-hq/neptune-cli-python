@@ -4,7 +4,7 @@ Neptune is a cloud deployment platform that makes it easy to deploy and manage a
 
 1. **Create neptune.json**: Use `get_project_schema` to get the JSON schema, then create a valid `neptune.json` configuration file based on the project's needs.
 
-2. **Add resources**: Use `add_new_resource` to get information about specific resource types (Database, StorageBucket, Secret) before adding them to the configuration.
+2. **Add resources**: Use `add_new_resource` to get information about specific resource types (StorageBucket, Secret) before adding them to the configuration.
 
 3. **Create Dockerfile**: Ensure a Dockerfile exists in the project directory. Neptune builds and runs your application as a container.
 
@@ -26,7 +26,6 @@ After a deployment, ALWAYS check the service status. If the service is not "Runn
     - Application crash on startup (missing dependencies, config errors)
     - Port binding issues (app must listen on port 8080 by default)
     - Missing environment variables or secrets
-    - Database connection failures
 4. **Fix and redeploy**: After identifying the issue, fix the code/config and run `deploy_project` again
 
 Common service issues:
@@ -38,7 +37,7 @@ Common service issues:
 ## Key Concepts
 
 -   **neptune.json**: The configuration file that defines the project name, workload type, and required resources.
--   **Resources**: Infrastructure components like databases, storage buckets, and secrets that the application needs.
+-   **Resources**: Infrastructure components like storage buckets and secrets that the application needs.
 -   **Dockerfile**: Required for deployment - Neptune builds and runs your application as a container.
 
 ## Important Notes
@@ -46,5 +45,4 @@ Common service issues:
 -   Always use `get_project_schema` before creating or modifying `neptune.json` to ensure the configuration is valid.
 -   Always use `add_new_resource` before adding resources to understand their properties and requirements.
 -   Deployments are ECS tasks on Fargate - container data is not persistent. Use provisioned resources for persistent storage.
--   Database connection tokens expire after 15 minutes - use them only for local testing, not programmatic access.
 -   **Always verify deployment health**: After `deploy_project`, check status and fetch logs if the service isn't running properly.
