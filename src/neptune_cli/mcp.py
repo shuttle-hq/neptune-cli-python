@@ -70,6 +70,55 @@ def get_project_schema() -> dict[str, Any]:
         }
 
 
+@mcp.tool("login")
+def login() -> dict[str, Any]:
+    """Authenticate with Neptune.
+
+    Opens a browser window for OAuth login. After successful authentication,
+    the access token is saved for use with Neptune tools.
+    """
+    import webbrowser
+    from urllib.parse import urlencode
+    from neptune_cli.auth import serve_callback_handler
+    from neptune_cli.config import SETTINGS
+
+    # Start local server to receive OAuth callback
+    port, httpd, thread = serve_callback_handler()
+
+    # Build login URL
+    params = urlencode({"redirect_uri": f"http://localhost:{port}/callback"})
+    login_url = f"{SETTINGS.api_base_url}/auth/login?{params}"
+
+    # Try to open browser
+    browser_opened = webbrowser.open(login_url)
+
+    if not browser_opened:
+        return {
+            "status": "pending",
+            "message": "Could not open browser automatically.",
+            "login_url": login_url,
+            "next_step": "Please open the URL above in your browser to complete login, then call this tool again.",
+        }
+
+    # Wait for callback
+    thread.join()
+
+    if httpd.access_token is not None:
+        SETTINGS.access_token = httpd.access_token
+        SETTINGS.save_to_file()
+        return {
+            "status": "success",
+            "message": "Successfully logged in!",
+            "next_step": "You can now use other Neptune tools to deploy and manage your projects.",
+        }
+    else:
+        return {
+            "status": "error",
+            "message": "Login failed - no access token received.",
+            "next_step": "Try running the 'login' tool again.",
+        }
+
+
 @mcp.tool("add_new_resource")
 def add_new_resource(kind: str) -> dict[str, Any]:
     """Get information about resource types that can be provisioned on Neptune.
