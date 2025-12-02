@@ -7,17 +7,6 @@
 
 ## Getting Started
 
-Make sure you are also running the `neptune-aws-platform` locally (by default this will look for it at
-`localhost:8000`).
-
-```
-git clone https://github.com/shuttle-hq/neptune-cli-python.git
-cd neptune-cli-python
-git submodule update --init --recursive
-
-# Install the CLI
-uv tool install -e .
-```
 
 For example, for Cursor, you can go to Cursor Settings -> Tools & MCP -> New MCP Server:
 
@@ -26,8 +15,8 @@ For example, for Cursor, you can go to Cursor Settings -> Tools & MCP -> New MCP
   "mcpServers": {
     "neptune": {
       "type": "stdio",
-      "command": "neptune",
-      "args": ["mcp"]
+      "command": "uvx",
+      "args": ["--isolated", "--from", "git+https://github.com/shuttle-hq/neptune-cli-python.git", "neptune", "mcp"]
     }
   }
 }
