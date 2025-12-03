@@ -9,7 +9,7 @@ def serve_callback_handler():
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
-            self.wfile.write(b"Login successful! You can close this window.")
+            self.wfile.write(b"<h1>Login successful! You can close this window.</h1>")
             # Extract access token from the URL "token" query parameter
             from urllib.parse import urlparse, parse_qs
 
