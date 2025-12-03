@@ -225,7 +225,16 @@ def provision_resources(neptune_json_path: str) -> dict[str, Any]:
 
     # go over all resources, wait until all are provisioned
     all_provisioned = False
+    start_time = time.time()
+    timeout = 120  # 2 minutes
     while not all_provisioned:
+        if time.time() - start_time > timeout:
+            log.error(f"Provisioning timed out after {timeout} seconds")
+            return {
+                "status": "error",
+                "message": f"provisioning timed out after {timeout} seconds while waiting for status 'Ready'",
+                "next_step": "wait a moment and retry provisioning with 'provision_resources', or check the project status and investigate any provisioning issues",
+            }
         all_provisioned = True
         for resource in project.resources:
             if resource.status == "Pending":
