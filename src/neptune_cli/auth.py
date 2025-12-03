@@ -11,7 +11,7 @@ def serve_callback_handler():
             self.end_headers()
             self.wfile.write(b"<h1>Login successful! You can close this window.</h1>")
             # Extract access token from the URL "token" query parameter
-            from urllib.parse import urlparse, parse_qs
+            from urllib.parse import parse_qs, urlparse
 
             query_components = parse_qs(urlparse(self.path).query)
             if "token" in query_components:

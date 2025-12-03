@@ -22,10 +22,6 @@ binary_next_line            = true
 switch_case_indent          = true
 space_redirects             = true
 
-[*.rs]
-indent_size                 = 4
-continuation_indent_size    = 4
-
 [*.py]
 indent_size                 = 4
 continuation_indent_size    = 4

@@ -1,18 +1,16 @@
-import requests
-
 from dataclasses import dataclass
-
-from neptune_cli.config import SETTINGS
-
 from typing import Any
 
 from neptune_common import (
-    PutProjectRequest,
-    GetProjectResponse,
-    PostDeploymentResponse,
     GetLogsResponse,
+    GetProjectResponse,
     ListBucketKeysResponse,
+    PostDeploymentResponse,
+    PutProjectRequest,
 )
+import requests
+
+from neptune_cli.config import SETTINGS
 
 
 @dataclass

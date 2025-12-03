@@ -1,14 +1,12 @@
 import os
 
 import click
-
 from loguru import logger as log
 
-
+from neptune_cli.auth import serve_callback_handler
 from neptune_cli.client import Client
 from neptune_cli.config import SETTINGS
 from neptune_cli.mcp import mcp as mcp_server
-from neptune_cli.auth import serve_callback_handler
 
 
 @click.group()
@@ -87,9 +85,8 @@ def login():
     """Authenticate with Neptune"""
     port, httpd, thread = serve_callback_handler()
 
-    import webbrowser
-
     from urllib.parse import urlencode
+    import webbrowser
 
     params = urlencode({"redirect_uri": f"http://localhost:{port}/callback"})
 
