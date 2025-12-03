@@ -10,11 +10,52 @@ Neptune is a cloud deployment platform that makes it easy to deploy and manage a
 
 4. **Provision**: Use `provision_resources` to create the cloud infrastructure defined in `neptune.json`.
 
-5. **Set secrets**: If the project uses secrets, use `set_secret_value` to securely set their values.
+5. **Configure resources**:
+   - For **Secrets**: Use `set_secret_value` to securely set their values.
+   - For **Storage Buckets**: Note the `aws_id` returned - this is the bucket ID needed in your code. See "Storage Bucket Workflow" below.
 
 6. **Deploy**: Use `deploy_project` to build and deploy the application.
 
 7. **Monitor**: Use `get_deployment_status`, `wait_for_deployment`, and `get_logs` to monitor the deployment.
+
+## Storage Bucket Workflow
+
+When using Storage Buckets, follow this workflow to properly connect your application:
+
+1. **Add the bucket to neptune.json**:
+   ```json
+   {
+     "kind": "StorageBucket",
+     "name": "uploads"
+   }
+   ```
+
+2. **Provision resources**: Run `provision_resources`. The response includes the `aws_id` for each bucket - this is the actual S3 bucket name you need.
+
+3. **Use the bucket ID in your code**: Hardcode the `aws_id` value returned from provisioning:
+   ```python
+   import os
+   import boto3
+
+   # Use the aws_id from provision_resources response
+   BUCKET_ID = 'neptune-abc123-uploads'  # Replace with your actual aws_id
+
+   s3 = boto3.client(
+       's3',
+       aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+       aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+       region_name='eu-west-2',
+   )
+
+   s3.upload_file('file.jpg', BUCKET_ID, 'path/file.jpg')
+   ```
+
+   Note: AWS credentials (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) are automatically injected into your deployed application.
+
+**Tools for bucket management**:
+- `get_bucket_connection_info`: Get the bucket ID and usage examples
+- `list_bucket_files`: List files in a bucket
+- `get_bucket_object`: Retrieve a file from a bucket
 
 ## Troubleshooting Deployments
 

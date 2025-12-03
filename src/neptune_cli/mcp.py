@@ -129,7 +129,18 @@ def add_new_resource(kind: str) -> dict[str, Any]:
     """
     if kind == "StorageBucket":
         return {
-            "description": "Backend is a plain AWS S3 bucket.",
+            "description": "S3-compatible object storage for files and assets. Under the hood, these are AWS S3 buckets.",
+            "auto_injected_credentials": {
+                "AWS_ACCESS_KEY_ID": "Access key for S3 API - automatically injected into your deployed application",
+                "AWS_SECRET_ACCESS_KEY": "Secret key for S3 API - automatically injected into your deployed application",
+            },
+            "bucket_id_workflow": """
+IMPORTANT: After provisioning, you need the bucket ID (aws_id) to connect to your bucket.
+
+1. Run 'provision_resources' to create the bucket
+2. The response will include the 'aws_id' for each StorageBucket resource
+3. Hardcode this 'aws_id' in your application code as the Bucket parameter in S3 operations
+""",
             "neptune_json_configuration": """
 To add a bucket to a project, add the following to 'resources' in 'neptune.json':
 ```json
@@ -137,9 +148,9 @@ To add a bucket to a project, add the following to 'resources' in 'neptune.json'
     "kind": "StorageBucket",
     "name": "<bucket_name>"
 }
+```
 
 A full working example:
-
 ```json
 {
   "kind": "Service",
@@ -147,47 +158,97 @@ A full working example:
   "resources": [
     {
       "kind": "StorageBucket",
-      "name": "<bucket_name>"
+      "name": "uploads"
     }
   ]
 }
 ```
 
 When done with the change, provision the bucket with 'provision_resources'.
+Note the 'aws_id' returned and hardcode it in your application code.
 """,
             "example_code_usage": """
 ```python
+import os
 import boto3
-client = boto3.client("s3")
-client.put_object(Bucket="<aws_id>", Key="path/to/object", Body=b"data")
+
+# Hardcode the aws_id from the provision_resources response
+BUCKET_ID = 'neptune-abc123-uploads'  # Replace with your actual aws_id
+
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+    aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+    region_name='eu-west-2',
+)
+
+# Upload a file
+s3.upload_file('photo.jpg', BUCKET_ID, 'images/photo.jpg')
+
+# Download a file
+s3.download_file(BUCKET_ID, 'images/photo.jpg', 'photo.jpg')
 ```
 """,
+            "next_steps": [
+                "1. Add StorageBucket to neptune.json",
+                "2. Run 'provision_resources'",
+                "3. Note the 'aws_id' returned for the bucket",
+                "4. Hardcode the 'aws_id' in your application code",
+                "5. Run 'deploy_project'",
+            ],
         }
     elif kind == "Secret":
         return {
-            "description": "Managed secret storage for your applications.",
+            "description": "Managed secret storage for your applications. Secrets are securely stored and injected as environment variables into your deployed application.",
             "neptune_json_configuration": """
 To add a secret to a project, add the following to 'resources' in 'neptune.json':
 ```json
 {
     "kind": "Secret",
-    "name": "<secret_name>"
+    "name": "<SECRET_NAME>"
 }
 ```
+
+TIP: Use uppercase names with underscores for secrets (e.g., "API_KEY", "DATABASE_URL") 
+as they become environment variables in your application.
+
+A full working example:
+```json
+{
+  "kind": "Service",
+  "name": "<project_name>",
+  "resources": [
+    {
+      "kind": "Secret",
+      "name": "API_KEY"
+    }
+  ]
+}
+```
+
+When done with the change, provision the secret with 'provision_resources'.
+After provisioning, use 'set_secret_value' to set the secret's value.
 """,
             "example_code_usage": """
 ```python
-import boto3
-client = boto3.client("secretsmanager")
-response = client.get_secret_value(SecretId="<aws_id>")
-secret = response['SecretString']
+import os
+
+# Secrets are automatically injected as environment variables
+api_key = os.environ['API_KEY']
 ```
 """,
+            "next_steps": [
+                "1. Add Secret to neptune.json",
+                "2. Run 'provision_resources'",
+                "3. Use 'set_secret_value' to set the secret's value",
+                "4. Access the secret in your code via os.environ['SECRET_NAME']",
+                "5. Run 'deploy_project'",
+            ],
         }
     else:
         return {
             "error": "Unknown resource kind",
-            "message": f"The resource kind '{kind}' is not recognized. Valid kind are 'StorageBucket' and 'Secret'.",
+            "message": f"The resource kind '{kind}' is not recognized. Valid kinds are 'StorageBucket' and 'Secret'.",
         }
 
 
@@ -236,12 +297,36 @@ def provision_resources(neptune_json_path: str) -> dict[str, Any]:
             project = client.get_project(project_request.name)
 
     log.info(f"Project '{project_request.name}' resources provisioned successfully")
-    return {
+
+    # Extract bucket IDs for easy reference
+    bucket_ids = {}
+    for resource in project.resources:
+        if resource.kind == "StorageBucket" and resource.aws_id:
+            bucket_ids[resource.name] = resource.aws_id
+
+    response = {
         "infrastructure_status": "ready",
         "message": "all the resources required by the project have been provisioned, and it is ready for deployment",
-        "next_step": "deploy the project using the 'deploy_project' command; note how each resource should be used by inspecting their descriptions in this response",
         "infrastructure_resources": [resource.model_dump() for resource in project.resources],
     }
+
+    # Add bucket-specific guidance if buckets were provisioned
+    if bucket_ids:
+        response["storage_bucket_ids"] = bucket_ids
+        response["bucket_usage_instructions"] = (
+            "IMPORTANT: Use the 'aws_id' values above as the Bucket parameter in your S3 operations. "
+            "Hardcode these bucket IDs in your application code. "
+            "AWS credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY) are automatically injected into your deployed application."
+        )
+        response["next_steps"] = [
+            "1. Note the 'aws_id' for each StorageBucket above - this is the actual S3 bucket name",
+            "2. Hardcode the 'aws_id' in your application code",
+            "3. Deploy the project using 'deploy_project'",
+        ]
+    else:
+        response["next_step"] = "deploy the project using the 'deploy_project' command"
+
+    return response
 
 
 @mcp.tool("delete_project")
@@ -417,6 +502,93 @@ def get_deployment_status(neptune_json_path: str) -> dict[str, Any]:
         "service_running_status": project.running_status.model_dump(),
         "infrastructure_resources": [resource.model_dump() for resource in project.resources],
         "next_steps": "use this information to monitor the deployment status; if there are issues, check the logs and redeploy as necessary",
+    }
+
+
+@mcp.tool("get_bucket_connection_info")
+def get_bucket_connection_info(neptune_json_path: str, bucket_name: str) -> dict[str, Any]:
+    """Get the connection information for a storage bucket resource.
+
+    Returns the bucket ID (aws_id) needed to connect to the bucket in your application code.
+    AWS credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY) are automatically injected
+    into your deployed application.
+
+    Note the bucket must already exist in the neptune.json configuration of the project.
+    It must also be provisioned using 'provision_resources' before retrieving its connection info.
+    """
+    client = Client()
+
+    if validation_result := validate_neptune_json(neptune_json_path):
+        return validation_result
+
+    with open(neptune_json_path, "r") as f:
+        project_data = f.read()
+
+    project_request = PutProjectRequest.model_validate_json(project_data)
+    project_name = project_request.name
+
+    project = client.get_project(project_name)
+    if project is None:
+        log.error(f"Project '{project_name}' not found; was it provisioned?")
+        return {
+            "status": "error",
+            "message": f"Project '{project_name}' not found; did you provision it?",
+            "next_step": "provision the project using the 'provision_resources' command",
+        }
+
+    bucket_resource = next(
+        (res for res in project.resources if res.kind == "StorageBucket" and res.name == bucket_name),
+        None,
+    )
+    if bucket_resource is None:
+        log.error(f"Storage bucket resource '{bucket_name}' not found in project '{project_name}'")
+        return {
+            "status": "error",
+            "message": f"Storage bucket resource '{bucket_name}' not found in project '{project_name}'",
+            "next_step": "ensure the storage bucket is defined in 'neptune.json' and provisioned with 'provision_resources'",
+        }
+
+    if bucket_resource.status != "Available":
+        return {
+            "status": "pending",
+            "message": f"Bucket '{bucket_name}' is still being provisioned (status: {bucket_resource.status})",
+            "next_step": "wait for provisioning to complete and try again",
+        }
+
+    return {
+        "status": "success",
+        "bucket_name": bucket_name,
+        "bucket_id": bucket_resource.aws_id,
+        "region": "eu-west-2",
+        "auto_injected_credentials": {
+            "AWS_ACCESS_KEY_ID": "Automatically injected into your deployed application",
+            "AWS_SECRET_ACCESS_KEY": "Automatically injected into your deployed application",
+        },
+        "usage_example": f"""
+import os
+import boto3
+
+# Hardcode the bucket ID from this response
+BUCKET_ID = '{bucket_resource.aws_id}'
+
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+    aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+    region_name='eu-west-2',
+)
+
+# Upload a file
+s3.upload_file('local_file.txt', BUCKET_ID, 'remote/path/file.txt')
+
+# Download a file
+s3.download_file(BUCKET_ID, 'remote/path/file.txt', 'local_file.txt')
+""",
+        "next_steps": [
+            f"1. Hardcode '{bucket_resource.aws_id}' as the Bucket parameter in your S3 operations",
+            "2. Update your application code to use the bucket",
+            "3. Deploy with 'deploy_project'",
+        ],
     }
 
 
