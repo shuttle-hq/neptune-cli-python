@@ -6,7 +6,7 @@ from neptune_cli.config import SETTINGS
 
 from typing import Any
 
-from neptune_common.models import (
+from neptune_common import (
     PutProjectRequest,
     GetProjectResponse,
     PostDeploymentResponse,

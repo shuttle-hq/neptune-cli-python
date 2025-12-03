@@ -8,7 +8,7 @@ from loguru import logger as log
 
 from neptune_cli.client import Client
 
-from neptune_common.models import PutProjectRequest
+from neptune_common import PutProjectRequest
 
 
 def _load_instructions() -> str:
