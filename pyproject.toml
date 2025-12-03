@@ -12,15 +12,27 @@ dependencies = [
 	"requests>=2.32.5",
 	"platformdirs>=4.5.0",
 ]
+authors = [
+    { name = "Neptune CLI contributors" }
+]
+maintainers = [
+    { name = "Neptune" }
+]
+keywords = ["cloud", "ifc", "deployment", "infrastructure", "devops", "cli"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.13",
+    "Environment :: Console",
+    "Natural Language :: English",
+    "Topic :: System :: Software Distribution"
+]
 
 [project.optional-dependencies]
 dev = [
 	"pytest",
 ]
-
-[build-system]
-requires = ["uv_build>=0.9.13,<0.10.0"]
-build-backend = "uv_build"
 
 [tool.uv.sources]
 neptune-common = { path = "./neptune-api" }
@@ -36,3 +48,23 @@ neptune = "neptune_cli.cli:cli"
 [tool.ruff]
 target-version = "py313" # Align with the project requirements
 line-length = 120  # Align with .editorconfig
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "**/test_*.py",
+    "/.github",
+    "uv.lock",
+    ".editorconfig",
+    ".gitmodules",
+    "/.venv",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "neptune-api/src/neptune_common",
+    "src/neptune_cli"
+]
