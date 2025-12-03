@@ -565,23 +565,6 @@ wheels = [
 ]
 
 [[package]]
-name = "neptune-api"
-version = "0.1.0"
-source = { directory = "neptune-api" }
-dependencies = [
-    { name = "pydantic" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "pydantic", specifier = ">=2.12.5" }]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest", specifier = ">=9.0.1" },
-    { name = "ruff", specifier = ">=0.14.6" },
-]
-
-[[package]]
 name = "neptune-cli"
 version = "0.1.0"
 source = { editable = "." }
@@ -589,7 +572,6 @@ dependencies = [
     { name = "click" },
     { name = "fastmcp" },
     { name = "loguru" },
-    { name = "neptune-api" },
     { name = "platformdirs" },
     { name = "pydantic-settings" },
     { name = "requests" },
@@ -610,7 +592,6 @@ requires-dist = [
     { name = "click", specifier = ">=8.1.0" },
     { name = "fastmcp", specifier = ">=2.13.0.2" },
     { name = "loguru", specifier = ">=0.7.3" },
-    { name = "neptune-api", directory = "neptune-api" },
     { name = "platformdirs", specifier = ">=4.5.0" },
     { name = "pydantic-settings", specifier = ">=2.11.0" },
     { name = "pytest", marker = "extra == 'dev'" },

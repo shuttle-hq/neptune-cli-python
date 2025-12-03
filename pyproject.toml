@@ -10,7 +10,6 @@ dependencies = [
 	"loguru>=0.7.3",
 	"pydantic-settings>=2.11.0",
 	"requests>=2.32.5",
-	"neptune-api",
 	"platformdirs>=4.5.0",
 ]
 
@@ -24,7 +23,7 @@ requires = ["uv_build>=0.9.13,<0.10.0"]
 build-backend = "uv_build"
 
 [tool.uv.sources]
-neptune-api = { path = "./neptune-api" }
+neptune-common = { path = "./neptune-api" }
 
 [dependency-groups]
 dev = [
