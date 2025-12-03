@@ -1,0 +1,29 @@
+---
+minimum_pre_commit_version: '4.0.0'
+default_stages:
+  - pre-commit
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    # pragma: allowlist nextline secret
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-yaml
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+      - id: check-merge-conflict
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # pragma: allowlist nextline secret
+    rev: 36243b70e5ce219623c3503f5afba0f8c96fda55  # frozen: v0.14.7
+    hooks:
+      # Lint python files (and optimise the imports too)
+      - id: ruff-check
+        name: ruff-lint
+        alias: ruff-lint
+        args: ['--fix', '--exit-non-zero-on-fix']
+      # Apply opinionated formatting (equivalent to black)
+      - id: ruff-format

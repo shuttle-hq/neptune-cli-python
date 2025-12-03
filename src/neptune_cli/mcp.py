@@ -1,14 +1,13 @@
 import os
-import time
 from pathlib import Path
+import time
 from typing import Any
 
 from fastmcp import Context, FastMCP
 from loguru import logger as log
+from neptune_common import PutProjectRequest
 
 from neptune_cli.client import Client
-
-from neptune_common import PutProjectRequest
 
 
 def _load_instructions() -> str:
@@ -77,8 +76,9 @@ def login() -> dict[str, Any]:
     Opens a browser window for OAuth login. After successful authentication,
     the access token is saved for use with Neptune tools.
     """
-    import webbrowser
     from urllib.parse import urlencode
+    import webbrowser
+
     from neptune_cli.auth import serve_callback_handler
     from neptune_cli.config import SETTINGS
 
