@@ -226,7 +226,7 @@ def provision_resources(neptune_json_path: str) -> dict[str, Any]:
     # go over all resources, wait until all are provisioned
     all_provisioned = False
     start_time = time.time()
-    timeout = 120  # 2 minutes
+    timeout = 180  # 3 minutes
     while not all_provisioned:
         if time.time() - start_time > timeout:
             log.error(f"Provisioning timed out after {timeout} seconds")
@@ -383,7 +383,7 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
 
     # while deployment.status is not "Deployed", poll every 2 seconds
     start_time = time.time()
-    timeout = 120  # 2 minutes
+    timeout = 180  # 3 minutes
     while deployment.status != "Deployed":
         if time.time() - start_time > timeout:
             log.error(f"Deployment timed out after {timeout} seconds")
