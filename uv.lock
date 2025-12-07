@@ -591,7 +591,7 @@ dev = [{ name = "ruff", specifier = ">=0.14.6" }]
 [[package]]
 name = "neptune-common"
 version = "0.1.0"
-source = { git = "https://github.com/shuttle-hq/neptune-common.git?rev=main#ca51ecf140770527ec240ce2441fecd5692f20a3" }
+source = { git = "https://github.com/shuttle-hq/neptune-common.git?rev=main#190f7aa211c0947187998c8dcc9f2d65ec1f2860" }
 dependencies = [
     { name = "pydantic" },
 ]
