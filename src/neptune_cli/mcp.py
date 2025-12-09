@@ -681,6 +681,92 @@ def get_logs(neptune_json_path: str) -> dict[str, Any]:
         "next_step": "use these logs to debug your application or monitor its behavior; fix any issues and redeploy as necessary",
     }
 
+@mcp.tool("info")
+async def info() -> dict[str, Any]:
+    """Get information about Neptune and available tools for cloud deployment management."""
+    # check if docker is installed and running
+    if not check_docker_installed():
+        return {
+            "status": "error",
+            "message": "Docker is not installed or running. Neptune requires Docker to be installed for building images for your apps.",
+            "next_step": "Install Docker and make sure it is running before using Neptune.",
+        }
+
+    tools_list = await list_tools()
+    tools_by_name = {tool["name"]: tool["description"] for tool in tools_list}
+
+    return {
+        "status": "success",
+        "platform": "Neptune (neptune.dev)",
+        "description": "Neptune is a cloud deployment platform that simplifies deploying and managing containerized applications with provisioned cloud resources.",
+        "available_tools": {
+            "setup": {
+                "login": tools_by_name.get("login", "Authenticate with Neptune"),
+                "get_project_schema": tools_by_name.get("get_project_schema", "Get the JSON schema for neptune.json"),
+            },
+            "configuration": {
+                "add_new_resource": tools_by_name.get("add_new_resource", "Get info about resource types (StorageBucket, Secret, etc.) and how to configure these resources in neptune.json"),
+            },
+            "deployment": {
+                "provision_resources": tools_by_name.get("provision_resources", "Provision cloud infrastructure"),
+                "deploy_project": tools_by_name.get("deploy_project", "Build and deploy the application"),
+                "wait_for_deployment": tools_by_name.get("wait_for_deployment", "Wait for deployment to complete"),
+                "get_deployment_status": tools_by_name.get("get_deployment_status", "Check deployment and resource status"),
+                "delete_project": tools_by_name.get("delete_project", "Delete project and all resources"),
+            },
+            "resources": {
+                "set_secret_value": tools_by_name.get("set_secret_value", "Set a secret value"),
+                "list_bucket_files": tools_by_name.get("list_bucket_files", "List files in a storage bucket"),
+                "get_bucket_object": tools_by_name.get("get_bucket_object", "Retrieve an object from a bucket"),
+            },
+            "monitoring": {
+                "get_logs": tools_by_name.get("get_logs", "Retrieve deployment logs"),
+            },
+        },
+        "typical_workflow": [
+            "1. login - Authenticate with Neptune",
+            "2. get_project_schema - Understand the neptune.json structure",
+            "3. Create neptune.json in your project root",
+            "4. add_new_resource - (Optional) Learn how to add secrets or storage buckets",
+            "5. provision_resources - Create the cloud infrastructure",
+            "6. set_secret_value - (If using secrets) Set secret values",
+            "7. deploy_project - Build and deploy your application",
+            "8. wait_for_deployment - Wait for deployment to complete",
+            "9. get_deployment_status - Verify deployment is running",
+            "10. get_logs - Monitor application logs",
+        ],
+        "requirements": {
+            "docker": "Required for building container images",
+            "neptune.json": "Project configuration file in the project root",
+            "Dockerfile": "Required in the project directory for deployment",
+        },
+        "next_step": "Use 'login' to authenticate with Neptune, then 'get_project_schema' to understand how to configure your project.",
+    }
+
+async def list_tools() -> list[dict[str, Any]]:
+    """Function to return all tools provided by this MCP."""
+    tools = await mcp.get_tools()
+    return [
+        {
+            "name": tool.name,
+            "description": tool.description,
+        }
+        for tool in tools.values()
+    ]
+
+def check_docker_installed() -> bool:
+    """Check if docker is installed and running."""
+    import subprocess
+    try:
+        result = subprocess.Popen(["docker", "info"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result.communicate()
+        if result.returncode != 0:
+            return False
+        return True    
+    except Exception as e:
+        log.error(f"Failed to check if docker is installed and running: {e}")
+        return False
+
 
 if __name__ == "__main__":
     mcp.run()
