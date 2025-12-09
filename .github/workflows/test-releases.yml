@@ -1,0 +1,50 @@
+name: Test Releases
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to use for install scripts"
+        required: false
+        default: "main"
+
+env:
+  INSTALL_BRANCH: ${{ github.event.inputs.branch || 'main' }}
+
+jobs:
+  test-unix:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+          - os: ubuntu-24.04-arm
+          - os: macos-latest
+          - os: macos-15-intel
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Install via install.sh
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/${{ env.INSTALL_BRANCH }}/install.sh | bash
+
+      - name: Test neptune --help
+        run: ~/.local/bin/neptune --help
+
+  test-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Install via install.ps1
+        shell: pwsh
+        run: |
+          irm https://raw.githubusercontent.com/${{ github.repository }}/${{ env.INSTALL_BRANCH }}/install.ps1 | iex
+
+      - name: Test neptune --help
+        shell: pwsh
+        run: |
+          $env:Path = "$env:LOCALAPPDATA\Programs\neptune;$env:Path"
+          neptune --help

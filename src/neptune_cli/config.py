@@ -17,9 +17,14 @@ class CLISettings(BaseSettings):
 
     access_token: str | None = None
 
+    # Update tracking
+    last_update_check: float | None = None  # Unix timestamp of last update check
+    skip_update_check: bool = False  # Set via NEPTUNE_SKIP_UPDATE_CHECK=1
+
     model_config = SettingsConfigDict(
         env_prefix="NEPTUNE_",
         json_file=Path(user_config_dir("neptune")) / "config.json",
+        extra="ignore",  # Ignore extra fields in config file for forward/backward compatibility
     )
 
     @classmethod
