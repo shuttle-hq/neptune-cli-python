@@ -146,25 +146,42 @@ def _perform_windows_upgrade(current_exe: Path, new_binary: Path, silent: bool) 
 
 
 def _spawn_windows_cleanup(old_exe: Path) -> None:
-    """Spawn a detached process to clean up the old exe after exit."""
+    """Spawn a detached process to clean up the old exe after exit.
+    
+    Uses a limited retry count to avoid infinite loops when the file
+    stays locked (e.g., when running as an MCP server in Cursor).
+    """
     import subprocess
 
-    cleanup_script = f'''
-@echo off
+    # Limited retries (60 attempts * 2 sec = 2 minutes max)
+    # After that, give up - the .old file isn't critical
+    cleanup_script = f'''@echo off
+setlocal
+set count=0
 :retry
-timeout /t 1 /nobreak >nul
+if %count% geq 60 goto cleanup
+set /a count+=1
+timeout /t 2 /nobreak >nul 2>nul
 del "{old_exe}" 2>nul
 if exist "{old_exe}" goto retry
-del "%~f0"
+:cleanup
+del "%~f0" 2>nul
 '''
 
     with tempfile.NamedTemporaryFile(mode="w", suffix=".bat", delete=False) as f:
         f.write(cleanup_script)
         bat_path = f.name
 
+    # Use CREATE_NO_WINDOW to prevent any visible terminal
+    startupinfo = subprocess.STARTUPINFO()
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    startupinfo.wShowWindow = 0  # SW_HIDE
+
     subprocess.Popen(
         ["cmd", "/c", bat_path],
-        creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NO_WINDOW,
+        creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP,
+        startupinfo=startupinfo,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
+        stdin=subprocess.DEVNULL,
     )
