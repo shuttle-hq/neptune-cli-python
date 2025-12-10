@@ -5,13 +5,13 @@
 **macOS/Linux:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shuttle-hq/neptune-cli-python/main/install.sh | bash
+curl -fsSL https://neptune.dev/install.sh | bash
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-irm https://raw.githubusercontent.com/shuttle-hq/neptune-cli-python/main/install.ps1 | iex
+irm https://neptune.dev/install.ps1 | iex
 ```
 
 ## Getting Started

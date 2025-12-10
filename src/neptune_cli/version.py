@@ -6,7 +6,7 @@ from packaging.version import Version
 import requests
 
 
-REPO = "shuttle-hq/neptune-cli-python"
+REPO = "dcodesdev/neptune-cli-python"
 GITHUB_API_URL = f"https://api.github.com/repos/{REPO}/releases/latest"
 DOWNLOAD_BASE_URL = f"https://github.com/{REPO}/releases/latest/download"
 REQUEST_TIMEOUT = 5
