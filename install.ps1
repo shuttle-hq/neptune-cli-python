@@ -1,7 +1,7 @@
 # Neptune CLI Installer for Windows
 $ErrorActionPreference = "Stop"
 
-$Repo = "shuttle-hq/neptune-cli-python"
+$Repo = "dcodesdev/neptune-cli-python"
 $InstallDir = "$env:LOCALAPPDATA\Programs\neptune"
 $BinaryName = "neptune.exe"
 
