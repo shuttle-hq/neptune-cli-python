@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from typing import List, Union
 import subprocess
+from typing import List, Union
 
 
 @dataclass

@@ -1,10 +1,6 @@
-import os
-
 import click
-from loguru import logger as log
 
 from neptune_cli.auth import serve_callback_handler
-from neptune_cli.client import Client
 from neptune_cli.config import SETTINGS
 from neptune_cli.mcp import mcp as mcp_server
 

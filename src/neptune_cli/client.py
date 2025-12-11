@@ -49,10 +49,12 @@ class Client:
         response = requests.get(self._mk_url(f"/project/{project_name}"), headers=self._get_headers())
         if response.status_code == 404:
             return None
+        response.raise_for_status()
         return GetProjectResponse.model_validate(response.json())
 
     def create_deployment(self, project_name: str) -> PostDeploymentResponse:
         response = requests.post(self._mk_url(f"/project/{project_name}/deploy"), headers=self._get_headers())
+        response.raise_for_status()
         return PostDeploymentResponse.model_validate(response.json())
 
     def get_deployment(self, project_name: str, revision: str | int = "latest") -> PostDeploymentResponse:
@@ -60,10 +62,12 @@ class Client:
             self._mk_url(f"/project/{project_name}/deploy/{revision}"),
             headers=self._get_headers(),
         )
+        response.raise_for_status()
         return PostDeploymentResponse.model_validate(response.json())
 
     def get_logs(self, project_name: str) -> GetLogsResponse:
         response = requests.get(self._mk_url(f"/project/{project_name}/logs"), headers=self._get_headers())
+        response.raise_for_status()
         return GetLogsResponse.model_validate(response.json())
 
     def set_secret_value(self, project_name: str, key: str, value: str) -> None:
@@ -78,6 +82,7 @@ class Client:
             self._mk_url(f"/project/{project_name}/bucket/{bucket_name}"),
             headers=self._get_headers(),
         )
+        response.raise_for_status()
         return ListBucketKeysResponse.model_validate(response.json()).keys
 
     def get_bucket_object(self, project_name: str, bucket_name: str, key: str) -> bytes:
@@ -85,6 +90,7 @@ class Client:
             self._mk_url(f"/project/{project_name}/bucket/{bucket_name}/object/{key}"),
             headers=self._get_headers(),
         )
+        response.raise_for_status()
         return response.content
 
     def get_project_schema(self) -> dict[str, Any]:
@@ -97,4 +103,5 @@ class Client:
             self._mk_url("/schema/project"),
             headers=self._get_headers(),
         )
+        response.raise_for_status()
         return response.json()
