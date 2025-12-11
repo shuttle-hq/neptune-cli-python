@@ -1,7 +1,6 @@
 import sys
 
 import click
-from loguru import logger as log
 
 from neptune_cli.auth import serve_callback_handler
 from neptune_cli.config import SETTINGS

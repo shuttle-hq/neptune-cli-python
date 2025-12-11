@@ -9,6 +9,7 @@ from neptune_common import PutProjectRequest
 
 from neptune_cli.client import Client
 from neptune_cli.upgrade import perform_upgrade
+from neptune_cli.config import SETTINGS
 from neptune_cli.utils import run_command
 from neptune_cli.version import check_for_update, get_current_version, is_running_as_binary
 
@@ -219,10 +220,12 @@ def provision_resources(neptune_json_path: str) -> dict[str, Any]:
 
     # while loop to retrieve project status, wait until ready
     project = client.get_project(project_request.name)
-    while project.provisioning_state != "Ready":
-        log.info(
-            f"Project '{project_request.name}' status: {project.provisioning_state}. Waiting for resources to be provisioned..."
-        )
+
+    while project is None or project.provisioning_state != "Ready":
+        if project is not None:
+            log.info(
+                f"Project '{project_request.name}' status: {project.provisioning_state}. Waiting for resources to be provisioned..."
+            )
         time.sleep(2)
         project = client.get_project(project_request.name)
 
@@ -305,7 +308,7 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
 
     This only works after the project has been provisioned using 'provision_resources'.
 
-    UNDER THE HOOD: deployments are ECS tasks running on Fargate, with images stored in ECR. In particular, this tool builds an image using the Dockerfile in the current directory.
+    UNDER THE HOOD: this tool builds an image using the Dockerfile in the current directory.
 
     Note: running tasks are *not* persistent; if the task stops or is redeployed, all data stored in the container is lost. Use provisioned resources (storage buckets, etc.) for persistent data storage.
     """
@@ -320,6 +323,13 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
         project_data = f.read()
 
     project_request = PutProjectRequest.model_validate_json(project_data)
+
+    if client.get_project(project_request.name) is None:
+        log.info(f"Creating project '{project_request.name}'...")
+        client.create_project(project_request)
+    else:
+        log.info(f"Updating project '{project_request.name}'...")
+        client.update_project(project_request)
 
     log.info(f"Deploying project '{project_request.name}'...")
 
@@ -428,6 +438,7 @@ def get_deployment_status(neptune_json_path: str) -> dict[str, Any]:
 
     This will tell you about running resources the project is using, as well as the state of the service.
     """
+    log.info("Getting deployment status for project ")
     client = Client()
 
     if validation_result := validate_neptune_json(neptune_json_path):
@@ -780,8 +791,8 @@ async def info() -> dict[str, Any]:
 
     return {
         "status": "success",
-        "platform": "Neptune (neptune.dev)",
         "version": get_current_version(),
+        "platform": f"Neptune (neptune.dev) - API Base URL: {SETTINGS.api_base_url.rstrip('/')}",
         "description": "Neptune is a cloud deployment platform that simplifies deploying and managing containerized applications with provisioned cloud resources.",
         "available_tools": {
             "setup": {
@@ -789,13 +800,18 @@ async def info() -> dict[str, Any]:
                 "get_project_schema": tools_by_name.get("get_project_schema", "Get the JSON schema for neptune.json"),
             },
             "configuration": {
-                "add_new_resource": tools_by_name.get("add_new_resource", "Get info about resource types (StorageBucket, Secret, etc.) and how to configure these resources in neptune.json"),
+                "add_new_resource": tools_by_name.get(
+                    "add_new_resource",
+                    "Get info about resource types (StorageBucket, Secret, etc.) and how to configure these resources in neptune.json",
+                ),
             },
             "deployment": {
                 "provision_resources": tools_by_name.get("provision_resources", "Provision cloud infrastructure"),
                 "deploy_project": tools_by_name.get("deploy_project", "Build and deploy the application"),
                 "wait_for_deployment": tools_by_name.get("wait_for_deployment", "Wait for deployment to complete"),
-                "get_deployment_status": tools_by_name.get("get_deployment_status", "Check deployment and resource status"),
+                "get_deployment_status": tools_by_name.get(
+                    "get_deployment_status", "Check deployment and resource status"
+                ),
                 "delete_project": tools_by_name.get("delete_project", "Delete project and all resources"),
             },
             "resources": {
@@ -830,6 +846,7 @@ async def info() -> dict[str, Any]:
         "next_step": "Use 'login' to authenticate with Neptune, then 'get_project_schema' to understand how to configure your project.",
     }
 
+
 async def list_tools() -> list[dict[str, Any]]:
     """Function to return all tools provided by this MCP."""
     tools = await mcp.get_tools()
@@ -841,15 +858,17 @@ async def list_tools() -> list[dict[str, Any]]:
         for tool in tools.values()
     ]
 
+
 def check_docker_installed() -> bool:
     """Check if docker is installed and running."""
     import subprocess
+
     try:
         result = subprocess.Popen(["docker", "info"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         result.communicate()
         if result.returncode != 0:
             return False
-        return True    
+        return True
     except Exception as e:
         log.error(f"Failed to check if docker is installed and running: {e}")
         return False
