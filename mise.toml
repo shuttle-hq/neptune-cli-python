@@ -1,0 +1,38 @@
+[hooks]
+enter = ["{{ mise_bin }} install", "uv sync", "prek install --install-hooks"]
+
+[[watch_files]]
+patterns = ["pyproject.toml", "uv.lock"]
+run = "uv sync"
+
+[env]
+_.python.venv = { path = ".venv", create = true }
+
+[tools]
+prek = "latest"
+python = "3.13"
+uv = "latest"
+
+[tasks]
+lint = "uv run ruff check --fix --force-exclude {{ config_root }}"
+format = "uv run ruff format --force-exclude {{ config_root }}"
+sync = "uv sync"
+
+[settings]
+gpg_verify = true
+auto_install = true
+experimental = true
+lockfile = true
+
+[settings.status]
+missing_tools = "always"
+
+[settings.pipx]
+uvx = true
+
+[settings.python]
+# Disabled until fixed: https://github.com/jdx/mise/discussions/7252
+# uv_venv_auto = true
+
+# Installs pip that is being used by JetBrains IDEs to resolve the dependencies
+uv_venv_create_args = ['--seed']
