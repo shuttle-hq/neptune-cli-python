@@ -252,7 +252,7 @@ def provision_resources(neptune_json_path: str) -> dict[str, Any]:
     return {
         "infrastructure_status": "ready",
         "message": "all the resources required by the project have been provisioned, and it is ready for deployment",
-        "next_step": "deploy the project using the 'deploy_project' command; note how each resource should be used by inspecting their descriptions in this response",
+        "next_step": "review the infrastructure_resources in case there's a task to do before deploying the project using the 'deploy_project' command; note how each resource should be used by inspecting their descriptions in this response",
         "infrastructure_resources": [resource.model_dump() for resource in project.resources],
     }
 
