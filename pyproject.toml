@@ -12,6 +12,8 @@ dependencies = [
     "requests>=2.32.5",
     "platformdirs>=4.5.0",
     "neptune-common @ git+https://github.com/shuttle-hq/neptune-common.git@main",
+    "aiofiles>=25.1.0",
+    "requests-futures>=1.0.2",
 ]
 
 [build-system]

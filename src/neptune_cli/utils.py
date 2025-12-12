@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 import subprocess
 from typing import List, Union
@@ -5,7 +6,7 @@ from typing import List, Union
 
 @dataclass
 class CommandResult:
-    returncode: int
+    returncode: int | None
     stdout: str
     stderr: str
 
@@ -14,8 +15,8 @@ class CommandResult:
         return self.returncode == 0
 
 
-def run_command(
-    command: Union[str, List[str]], shell: bool = False, timeout: int | None = None, cwd: str | None = None
+async def run_command(
+    command: str | bytes, cwd: str | None = None
 ) -> CommandResult:
     """
     Run a command and capture stdout, stderr, and return code.
@@ -28,13 +29,13 @@ def run_command(
     Returns:
         CommandResult with returncode, stdout, stderr
     """
-    result = subprocess.run(
+    proc = await asyncio.create_subprocess_shell(
         command,
-        shell=shell,
-        capture_output=True,  # Captures both stdout and stderr
-        text=True,  # Returns strings instead of bytes
-        timeout=timeout,
+        stderr  = asyncio.subprocess.PIPE,
+        stdout  = asyncio.subprocess.PIPE,
         cwd=cwd,
     )
 
-    return CommandResult(returncode=result.returncode, stdout=result.stdout, stderr=result.stderr)
+    stdout, stderr = await proc.communicate()
+
+    return CommandResult(returncode=proc.returncode, stdout=stdout.decode(), stderr=stderr.decode())

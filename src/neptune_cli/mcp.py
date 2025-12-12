@@ -1,8 +1,10 @@
+import asyncio
 import os
 from pathlib import Path
 import time
 from typing import Any
 
+import aiofiles
 from fastmcp import Context, FastMCP
 from loguru import logger as log
 from neptune_common import PutProjectRequest
@@ -301,7 +303,7 @@ def delete_project(neptune_json_path: str) -> dict[str, Any]:
 
 
 @mcp.tool("deploy_project")
-def deploy_project(neptune_json_path: str) -> dict[str, Any]:
+async def deploy_project(neptune_json_path: str) -> dict[str, Any]:
     """Deploy the current project.
 
     This only works after the project has been provisioned using 'provision_resources'.
@@ -317,8 +319,8 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
 
     project_dir = os.path.dirname(os.path.abspath(neptune_json_path))
 
-    with open(neptune_json_path, "r") as f:
-        project_data = f.read()
+    async with aiofiles.open(neptune_json_path, "r") as f:
+        project_data = await f.read()
 
     project_request = PutProjectRequest.model_validate_json(project_data)
 
@@ -332,7 +334,7 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
     log.info(f"Deploying project '{project_request.name}'...")
 
     try:
-        deployment = client.create_deployment(project_request.name)
+        deployment = await client.create_deployment_async(project_request.name)
     except Exception as e:
         log.error(f"Failed to create deployment for project '{project_request.name}': {e}")
         return {
@@ -343,7 +345,6 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
 
     # Run `docker build -t <image_name> -f Dockerfile . `, hiding the logs of the subprocess
     log.info(f"Building image for revision {deployment.revision}...")
-    import subprocess
 
     if (push_token := deployment.push_token) is not None:
         registry = deployment.image.split("/")[0]
@@ -355,14 +356,16 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
             "--password-stdin",
             registry,
         ]
-        login_process = subprocess.Popen(
-            login_cmd,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.STDOUT,
+        login_process = await asyncio.create_subprocess_shell(
+            " ".join(login_cmd),
+            stdin = asyncio.subprocess.PIPE,
+            stdout  = asyncio.subprocess.DEVNULL,
+            stderr  = asyncio.subprocess.STDOUT,
             cwd=project_dir,
         )
-        login_process.communicate(input=push_token.encode())
+
+        stdout, stderr = await login_process.communicate(input=push_token.encode())
+
         if login_process.returncode != 0:
             log.error("Docker login failed")
             return {
@@ -385,7 +388,7 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
         "Dockerfile",
         ".",
     ]
-    build_res = run_command(build_cmd, cwd=project_dir)
+    build_res = await run_command(" ".join(build_cmd), cwd=project_dir)
     if not build_res.success:
         log.error(f"Image build failed: {build_res.stderr}")
         return {
@@ -398,7 +401,7 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
 
     log.info(f"Pushing image for revision {deployment.revision}...")
     push_cmd = ["docker", "push", deployment.image]
-    push_res = run_command(push_cmd, cwd=project_dir)
+    push_res = await run_command(" ".join(push_cmd), cwd=project_dir)
     if not push_res.success:
         log.error(f"Image push failed: {push_res.stderr}")
         return {
@@ -418,7 +421,7 @@ def deploy_project(neptune_json_path: str) -> dict[str, Any]:
                 "message": f"deployment timed out after {timeout} seconds while waiting for status 'Deployed'",
                 "next_step": "check the deployment status with 'get_deployment_status' and investigate any issues",
             }
-        time.sleep(2)
+        await asyncio.sleep(2)
         deployment = client.get_deployment(project_request.name, revision=deployment.revision)
 
     log.info(f"Revision {deployment.revision} deployed successfully")

@@ -10,6 +10,7 @@ from neptune_common import (
     PutProjectRequest,
 )
 import requests
+import requests_futures
 
 from neptune_cli.config import SETTINGS
 
@@ -58,12 +59,23 @@ class Client:
         response.raise_for_status()
         return PostDeploymentResponse.model_validate(response.json())
 
+    async def create_deployment_async(self, project_name: str) -> PostDeploymentResponse:
+        response = await requests_futures.post(self._mk_url(f"/project/{project_name}/deploy"), headers=self._get_headers())
+        return PostDeploymentResponse.model_validate(response.json())
+
     def get_deployment(self, project_name: str, revision: str | int = "latest") -> PostDeploymentResponse:
         response = requests.get(
             self._mk_url(f"/project/{project_name}/deploy/{revision}"),
             headers=self._get_headers(),
         )
         response.raise_for_status()
+        return PostDeploymentResponse.model_validate(response.json())
+
+    async def get_deployment_async(self, project_name: str, revision: str | int = "latest") -> PostDeploymentResponse:
+        response = await requests_futures.get(
+            self._mk_url(f"/project/{project_name}/deploy/{revision}"),
+            headers=self._get_headers(),
+        )
         return PostDeploymentResponse.model_validate(response.json())
 
     def get_logs(self, project_name: str) -> GetLogsResponse:
