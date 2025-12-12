@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-REPO="dcodesdev/neptune-cli-python"
+REPO="shuttle-hq/neptune-mcp"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 BINARY_NAME="neptune"
 MAX_RETRIES=5
