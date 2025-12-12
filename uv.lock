@@ -577,8 +577,16 @@ wheels = [
 ]
 
 [[package]]
+name = "neptune-common"
+version = "0.1.0"
+source = { git = "https://github.com/shuttle-hq/neptune-common.git?rev=main#ca51ecf140770527ec240ce2441fecd5692f20a3" }
+dependencies = [
+    { name = "pydantic" },
+]
+
+[[package]]
 name = "neptune-mcp"
-version = "0.1.29"
+version = "0.1.30"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
@@ -613,14 +621,6 @@ requires-dist = [
 dev = [
     { name = "pyinstaller", specifier = ">=6.0" },
     { name = "ruff", specifier = ">=0.14.6" },
-]
-
-[[package]]
-name = "neptune-common"
-version = "0.1.0"
-source = { git = "https://github.com/shuttle-hq/neptune-common.git?rev=main#ca51ecf140770527ec240ce2441fecd5692f20a3" }
-dependencies = [
-    { name = "pydantic" },
 ]
 
 [[package]]
