@@ -5,10 +5,11 @@ from typing import Any
 
 from fastmcp import Context, FastMCP
 from loguru import logger as log
-from neptune_cli.client import Client
-from neptune_cli.config import SETTINGS
-from neptune_cli.utils import run_command
 from neptune_common import PutProjectRequest
+
+from neptune_mcp.client import Client
+from neptune_mcp.config import SETTINGS
+from neptune_mcp.utils import run_command
 
 
 def _load_instructions() -> str:
@@ -80,8 +81,8 @@ def login() -> dict[str, Any]:
     from urllib.parse import urlencode
     import webbrowser
 
-    from neptune_cli.auth import serve_callback_handler
-    from neptune_cli.config import SETTINGS
+    from neptune_mcp.auth import serve_callback_handler
+    from neptune_mcp.config import SETTINGS
 
     # Start local server to receive OAuth callback
     port, httpd, thread = serve_callback_handler()

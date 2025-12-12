@@ -429,12 +429,10 @@ If you experience issues with stdio transport, you can run the MCP server in HTT
 
 ```bash
 # macOS / Linux
-uvx --isolated --from git+https://github.com/shuttle-hq/neptune-mcp
-.git neptune mcp --transport=http
+uvx --isolated --from git+https://github.com/shuttle-hq/neptune-mcp.git neptune mcp --transport=http
 
 # Windows (PowerShell)
-uvx --isolated --from git+https://github.com/shuttle-hq/neptune-mcp
-.git neptune mcp --transport=http
+uvx --isolated --from git+https://github.com/shuttle-hq/neptune-mcp.git neptune mcp --transport=http
 ```
 
 The server will be available at `http://localhost:8001/mcp` by default.
@@ -473,8 +471,7 @@ Test that the MCP server starts correctly:
 
 ```bash
 # Should start without errors and wait for input
-uvx --isolated --from git+https://github.com/shuttle-hq/neptune-mcp
-.git neptune mcp
+uvx --isolated --from git+https://github.com/shuttle-hq/neptune-mcp.git neptune mcp
 ```
 
 Press `Ctrl+C` to stop the server.

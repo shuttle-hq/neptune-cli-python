@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
 
-from neptune_cli.config import SETTINGS
 from neptune_common import (
     GetLogsResponse,
     GetProjectResponse,
@@ -11,6 +10,8 @@ from neptune_common import (
     PutProjectRequest,
 )
 import requests
+
+from neptune_mcp.config import SETTINGS
 
 
 @dataclass
