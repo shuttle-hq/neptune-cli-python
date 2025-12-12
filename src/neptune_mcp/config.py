@@ -19,8 +19,7 @@ class CLISettings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="NEPTUNE_",
-        json_file=Path(user_config_dir("neptune")) / "config.json",
-        extra="ignore",  # Ignore extra fields in config file for forward/backward compatibility
+        json_file=Path(user_config_dir("neptune")) / "config.json"
     )
 
     @classmethod
