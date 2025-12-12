@@ -49,14 +49,5 @@ def login():
     print(httpd.callback_received and "Login successful!" or "Login failed.")
 
 
-@cli.command()
-def version():
-    """Display the current version of Neptune CLI"""
-    from importlib.metadata import version as get_version
-
-    version = get_version("neptune-mcp")
-    print(f"neptune {version}")
-
-
 if __name__ == "__main__":
     cli()
