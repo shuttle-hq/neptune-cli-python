@@ -218,13 +218,22 @@ def provision_resources(neptune_json_path: str) -> dict[str, Any]:
 
     # while loop to retrieve project status, wait until ready
     project = client.get_project(project_request.name)
+    project_start_time = time.time()
+    project_timeout = 90  # 90 seconds
 
     while project is None or project.provisioning_state != "Ready":
+        if time.time() - project_start_time > project_timeout:
+            log.error(f"Project provisioning timed out after {project_timeout} seconds")
+            return {
+                "status": "error",
+                "message": f"project provisioning timed out after {project_timeout} seconds while waiting for status 'Ready'",
+                "next_step": "wait a moment and retry provisioning with 'provision_resources', or check the project status and investigate any provisioning issues",
+            }
         if project is not None:
             log.info(
                 f"Project '{project_request.name}' status: {project.provisioning_state}. Waiting for resources to be provisioned..."
             )
-        time.sleep(2)
+        time.sleep(5)
         project = client.get_project(project_request.name)
 
     # go over all resources, wait until all are provisioned
