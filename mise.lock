@@ -1,0 +1,15 @@
+[[tools.prek]]
+version = "0.2.19"
+backend = "aqua:j178/prek"
+"platforms.linux-x64" = { checksum = "sha256:c8690f58b6eb2a8fe41321917c3ead3eae089dfde568eed1917c3f143f709c94", url = "https://github.com/j178/prek/releases/download/v0.2.19/prek-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:32995f2b056a3746d0c92ab37f2ecf5854d9d90a419add6d6f3012d3fb1ac1ff", url = "https://github.com/j178/prek/releases/download/v0.2.19/prek-aarch64-apple-darwin.tar.gz"}
+
+[[tools.python]]
+version = "3.13.7"
+backend = "core:python"
+
+[[tools.uv]]
+version = "0.9.13"
+backend = "aqua:astral-sh/uv"
+"platforms.linux-x64" = { checksum = "sha256:04cf326d2d742ce5c8890fdc0b9f71bd707be8640979bf6e53ddd52da74dfb41", url = "https://github.com/astral-sh/uv/releases/download/0.9.13/uv-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:9c594dce1c237e11680be2b6d1331448eeb6f8a1453fb851a66a40291bb624de", url = "https://github.com/astral-sh/uv/releases/download/0.9.13/uv-aarch64-apple-darwin.tar.gz"}
