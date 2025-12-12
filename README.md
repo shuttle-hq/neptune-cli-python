@@ -7,9 +7,7 @@
 </p>
 
 <p align="center">
-  <video src="./assets/neptune.mp4" width="600" controls>
-    Your browser does not support the video tag.
-  </video>
+  <img src="./assets/neptune.gif" width="600" alt="Neptune flow" /> 
 </p>
 
 ## What is Neptune?
