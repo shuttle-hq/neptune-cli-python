@@ -3,12 +3,16 @@
 </p>
 
 <p align="center">
+  <em>Give your coding agents DevOps superpowers</em>
+</p>
+
+<p align="center">
   <video src="./assets/neptune.mov" width="600" controls>
     Your browser does not support the video tag.
   </video>
 </p>
 
-## Give your coding agents DevOps superpowers
+## What is Neptune?
 
 Neptune is an app deployment platform built for AI agents that gives your agents real DevOps abilities. It reads your code, infers the infra it needs, and generates a simple IaC spec you can inspect, approve, and apply. Think: coding agents that can actually ship safely to AWS.
 
