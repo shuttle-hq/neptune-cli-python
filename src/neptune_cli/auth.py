@@ -1,3 +1,6 @@
+from concurrent.futures import ThreadPoolExecutor
+
+
 def serve_callback_handler():
     from http.server import BaseHTTPRequestHandler, HTTPServer
     import threading
@@ -32,6 +35,6 @@ def serve_callback_handler():
         while not getattr(httpd, "callback_received", False):
             httpd.handle_request()
 
-    thread = threading.Thread(target=run_server)
-    thread.start()
-    return port, httpd, thread
+    executor = ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(run_server)
+    return port, httpd, future

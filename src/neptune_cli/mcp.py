@@ -1,3 +1,4 @@
+import asyncio
 import os
 from pathlib import Path
 import time
@@ -72,7 +73,7 @@ def get_project_schema() -> dict[str, Any]:
 
 
 @mcp.tool("login")
-def login() -> dict[str, Any]:
+async def login() -> dict[str, Any]:
     """Authenticate with Neptune.
 
     Opens a browser window for OAuth login. After successful authentication,
@@ -85,7 +86,7 @@ def login() -> dict[str, Any]:
     from neptune_cli.config import SETTINGS
 
     # Start local server to receive OAuth callback
-    port, httpd, thread = serve_callback_handler()
+    port, httpd, future = serve_callback_handler()
 
     # Build login URL
     params = urlencode({"redirect_uri": f"http://localhost:{port}/callback"})
@@ -102,8 +103,7 @@ def login() -> dict[str, Any]:
             "next_step": "Please open the URL above in your browser to complete login, then call this tool again.",
         }
 
-    # Wait for callback
-    thread.join()
+    await future
 
     if httpd.access_token is not None:
         SETTINGS.access_token = httpd.access_token
