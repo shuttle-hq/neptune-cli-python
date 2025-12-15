@@ -30,6 +30,7 @@ packages_to_collect = [
     'uvicorn',
     'httpx',
     'httpcore',
+    'h11',
     'sse_starlette',
     'mcp',
     # fastmcp dependencies

@@ -30,7 +30,7 @@ if [ -f "dist/neptune" ]; then
     # Test the binary
     echo ""
     echo "Testing binary..."
-    ./dist/neptune version
+    ./dist/neptune --help
 
     echo ""
     echo "Done!"
