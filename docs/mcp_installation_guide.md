@@ -27,9 +27,9 @@ By default, the configurations below install from the latest `main` branch. To p
 
 | Version         | Git URL                                                            |
 | --------------- | ------------------------------------------------------------------ |
-| Latest (main)   | `git+https://github.com/shuttle-hq/neptune-cli-python.git`         |
-| Tag v0.1        | `git+https://github.com/shuttle-hq/neptune-cli-python.git@v0.1`    |
-| Specific commit | `git+https://github.com/shuttle-hq/neptune-cli-python.git@abc1234` |
+| Latest (main)   | `git+https://github.com/shuttle-hq/neptune-mcp.git`         |
+| Tag v0.1        | `git+https://github.com/shuttle-hq/neptune-mcp.git@v0.1`    |
+| Specific commit | `git+https://github.com/shuttle-hq/neptune-mcp.git@abc1234` |
 
 Simply replace the `--from` argument value in any configuration below. For example:
 
@@ -37,7 +37,7 @@ Simply replace the `--from` argument value in any configuration below. For examp
 "args": [
     "--isolated",
     "--from",
-    "git+https://github.com/shuttle-hq/neptune-cli-python.git@v0.1",
+    "git+https://github.com/shuttle-hq/neptune-mcp.git@v0.1",
     "neptune",
     "mcp"
 ]
@@ -66,7 +66,7 @@ Simply replace the `--from` argument value in any configuration below. For examp
             "args": [
                 "--isolated",
                 "--from",
-                "git+https://github.com/shuttle-hq/neptune-cli-python.git",
+                "git+https://github.com/shuttle-hq/neptune-mcp.git",
                 "neptune",
                 "mcp"
             ]
@@ -94,7 +94,7 @@ Simply replace the `--from` argument value in any configuration below. For examp
                 "uvx",
                 "--isolated",
                 "--from",
-                "git+https://github.com/shuttle-hq/neptune-cli-python.git",
+                "git+https://github.com/shuttle-hq/neptune-mcp.git",
                 "neptune",
                 "mcp"
             ]
@@ -113,7 +113,7 @@ Simply replace the `--from` argument value in any configuration below. For examp
             "command": "powershell",
             "args": [
                 "-Command",
-                "uvx --isolated --from git+https://github.com/shuttle-hq/neptune-cli-python.git neptune mcp"
+                "uvx --isolated --from git+https://github.com/shuttle-hq/neptune-mcp.git neptune mcp"
             ]
         }
     }
@@ -140,7 +140,7 @@ Simply replace the `--from` argument value in any configuration below. For examp
             "args": [
                 "--isolated",
                 "--from",
-                "git+https://github.com/shuttle-hq/neptune-cli-python.git",
+                "git+https://github.com/shuttle-hq/neptune-mcp.git",
                 "neptune",
                 "mcp"
             ]
@@ -167,7 +167,7 @@ Simply replace the `--from` argument value in any configuration below. For examp
             "args": [
                 "--isolated",
                 "--from",
-                "git+https://github.com/shuttle-hq/neptune-cli-python.git",
+                "git+https://github.com/shuttle-hq/neptune-mcp.git",
                 "neptune",
                 "mcp"
             ]
@@ -196,7 +196,7 @@ Simply replace the `--from` argument value in any configuration below. For examp
                 "uvx",
                 "--isolated",
                 "--from",
-                "git+https://github.com/shuttle-hq/neptune-cli-python.git",
+                "git+https://github.com/shuttle-hq/neptune-mcp.git",
                 "neptune",
                 "mcp"
             ]
@@ -229,7 +229,7 @@ Simply replace the `--from` argument value in any configuration below. For examp
             "args": [
                 "--isolated",
                 "--from",
-                "git+https://github.com/shuttle-hq/neptune-cli-python.git",
+                "git+https://github.com/shuttle-hq/neptune-mcp.git",
                 "neptune",
                 "mcp"
             ]
@@ -260,7 +260,7 @@ Simply replace the `--from` argument value in any configuration below. For examp
                 "uvx",
                 "--isolated",
                 "--from",
-                "git+https://github.com/shuttle-hq/neptune-cli-python.git",
+                "git+https://github.com/shuttle-hq/neptune-mcp.git",
                 "neptune",
                 "mcp"
             ]
@@ -287,13 +287,13 @@ JetBrains IDEs support MCP through the **AI Assistant** plugin (requires JetBrai
 3. Configure the server:
     - **Name**: `neptune`
     - **Command**: `uvx`
-    - **Arguments**: `--isolated --from git+https://github.com/shuttle-hq/neptune-cli-python.git neptune mcp`
+    - **Arguments**: `--isolated --from git+https://github.com/shuttle-hq/neptune-mcp.git neptune mcp`
 
 **Alternative: Using HTTP transport**
 
 1. Start the Neptune MCP server in HTTP mode:
     ```bash
-    uvx --isolated --from git+https://github.com/shuttle-hq/neptune-cli-python.git neptune mcp --transport=http
+    uvx --isolated --from git+https://github.com/shuttle-hq/neptune-mcp.git neptune mcp --transport=http
     ```
 2. In JetBrains, configure the MCP server URL: `http://localhost:8001/mcp`
 
@@ -307,13 +307,13 @@ JetBrains IDEs support MCP through the **AI Assistant** plugin (requires JetBrai
 3. Configure the server:
     - **Name**: `neptune`
     - **Command**: `cmd`
-    - **Arguments**: `/c uvx --isolated --from git+https://github.com/shuttle-hq/neptune-cli-python.git neptune mcp`
+    - **Arguments**: `/c uvx --isolated --from git+https://github.com/shuttle-hq/neptune-mcp.git neptune mcp`
 
 **Alternative: Using HTTP transport**
 
 1. Start the Neptune MCP server in HTTP mode:
     ```powershell
-    uvx --isolated --from git+https://github.com/shuttle-hq/neptune-cli-python.git neptune mcp --transport=http
+    uvx --isolated --from git+https://github.com/shuttle-hq/neptune-mcp.git neptune mcp --transport=http
     ```
 2. In JetBrains, configure the MCP server URL: `http://localhost:8001/mcp`
 
@@ -338,7 +338,7 @@ command: uvx
 args:
     - --isolated
     - --from
-    - git+https://github.com/shuttle-hq/neptune-cli-python.git
+    - git+https://github.com/shuttle-hq/neptune-mcp.git
     - neptune
     - mcp
 ```
@@ -355,7 +355,7 @@ Edit `~/.warp/mcp.json`:
             "args": [
                 "--isolated",
                 "--from",
-                "git+https://github.com/shuttle-hq/neptune-cli-python.git",
+                "git+https://github.com/shuttle-hq/neptune-mcp.git",
                 "neptune",
                 "mcp"
             ]
@@ -379,7 +379,7 @@ command: uvx
 args:
     - --isolated
     - --from
-    - git+https://github.com/shuttle-hq/neptune-cli-python.git
+    - git+https://github.com/shuttle-hq/neptune-mcp.git
     - neptune
     - mcp
 ```
@@ -396,7 +396,7 @@ Edit `~/.warp/mcp.json`:
             "args": [
                 "--isolated",
                 "--from",
-                "git+https://github.com/shuttle-hq/neptune-cli-python.git",
+                "git+https://github.com/shuttle-hq/neptune-mcp.git",
                 "neptune",
                 "mcp"
             ]
@@ -429,10 +429,10 @@ If you experience issues with stdio transport, you can run the MCP server in HTT
 
 ```bash
 # macOS / Linux
-uvx --isolated --from git+https://github.com/shuttle-hq/neptune-cli-python.git neptune mcp --transport=http
+uvx --isolated --from git+https://github.com/shuttle-hq/neptune-mcp.git neptune mcp --transport=http
 
 # Windows (PowerShell)
-uvx --isolated --from git+https://github.com/shuttle-hq/neptune-cli-python.git neptune mcp --transport=http
+uvx --isolated --from git+https://github.com/shuttle-hq/neptune-mcp.git neptune mcp --transport=http
 ```
 
 The server will be available at `http://localhost:8001/mcp` by default.
@@ -471,7 +471,7 @@ Test that the MCP server starts correctly:
 
 ```bash
 # Should start without errors and wait for input
-uvx --isolated --from git+https://github.com/shuttle-hq/neptune-cli-python.git neptune mcp
+uvx --isolated --from git+https://github.com/shuttle-hq/neptune-mcp.git neptune mcp
 ```
 
 Press `Ctrl+C` to stop the server.

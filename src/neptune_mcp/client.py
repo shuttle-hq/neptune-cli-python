@@ -12,7 +12,7 @@ from neptune_common import (
 import requests
 import httpx
 
-from neptune_cli.config import SETTINGS
+from neptune_mcp.config import SETTINGS
 
 
 @dataclass
