@@ -422,7 +422,7 @@ async def deploy_project(neptune_json_path: str) -> dict[str, Any]:
                 "next_step": "check the deployment status with 'get_deployment_status' and investigate any issues",
             }
         await asyncio.sleep(2)
-        deployment = client.get_deployment(project_request.name, revision=deployment.revision)
+        deployment = await client.get_deployment_async(project_request.name, revision=deployment.revision)
 
     log.info(f"Revision {deployment.revision} deployed successfully")
 
@@ -628,15 +628,15 @@ def get_bucket_object(neptune_json_path: str, bucket_name: str, key: str) -> dic
 
 
 @mcp.tool("wait_for_deployment")
-def wait_for_deployment(neptune_json_path: str) -> dict[str, Any]:
+async def wait_for_deployment(neptune_json_path: str) -> dict[str, Any]:
     """Wait for the current project deployment to complete."""
     client = Client()
 
     if validation_result := validate_neptune_json(neptune_json_path):
         return validation_result
 
-    with open(neptune_json_path, "r") as f:
-        project_data = f.read()
+    async with aiofiles.open(neptune_json_path, "r") as f:
+        project_data = await f.read()
 
     project_request = PutProjectRequest.model_validate_json(project_data)
     project_name = project_request.name
@@ -663,7 +663,7 @@ def wait_for_deployment(neptune_json_path: str) -> dict[str, Any]:
         log.info(
             f"Project '{project_name}' running status: {project.running_status.current}. Waiting for deployment to complete..."
         )
-        time.sleep(2)
+        await asyncio.sleep(2)
         project = client.get_project(project_name)
 
     return {

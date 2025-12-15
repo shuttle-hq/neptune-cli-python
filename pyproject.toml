@@ -13,7 +13,7 @@ dependencies = [
     "platformdirs>=4.5.0",
     "neptune-common @ git+https://github.com/shuttle-hq/neptune-common.git@main",
     "aiofiles>=25.1.0",
-    "requests-futures>=1.0.2",
+    "httpx>=0.28.1",
 ]
 
 [build-system]
@@ -21,9 +21,7 @@ requires = ["uv_build>=0.9.13,<0.10.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
-dev = [
-    "ruff>=0.14.6",
-]
+dev = ["ruff>=0.14.6"]
 
 [project.scripts]
 neptune = "neptune_cli.cli:cli"
@@ -59,8 +57,6 @@ section-order = [
     "standard-library",
     "third-party",
     "first-party",
-    "local-folder"
+    "local-folder",
 ]
-known-first-party = [
-    "neptune_cli",
-]
+known-first-party = ["neptune_cli"]
