@@ -25,6 +25,7 @@ packages_to_collect = [
     'requests',
     'certifi',
     'anyio',
+    'aiofiles',
     'starlette',
     'uvicorn',
     'httpx',
