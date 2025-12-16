@@ -5,7 +5,7 @@ from typing import Any
 
 from fastmcp import Context, FastMCP
 from loguru import logger as log
-from neptune_common import PutProjectRequest
+from neptune_common import PutProjectRequest, QueryDatabaseRequest
 
 from neptune_mcp.client import Client
 from neptune_mcp.config import SETTINGS
@@ -780,6 +780,68 @@ def list_projects() -> dict[str, Any]:
         "projects": project_names,
         "next_step": f"Use 'get_deployment_status' to get the status of a project and 'get_logs' to monitor its logs. Remember you have used {len(project_names)} out of 4 projects in your account.",
     }
+
+
+@mcp.tool("query_database")
+def query_database(neptune_json_path: str, table_name: str, where_clause: str | None = None) -> dict[str, Any]:
+    """Query a database resource for the current project. This will return the results of the query as a dictionary.
+    You can use the 'where_clause' parameter to filter the results of the query.
+    Example:
+    ```python
+    query_database(neptune_json_path, "users", "age > 18")
+    ```
+    This will return the results of the query as a dictionary.
+    You can use the 'table_name' parameter to specify the table to query.
+    Example:
+    ```python
+    query_database(neptune_json_path, "users", "age > 18")
+    ```
+
+    Note the database must already exist in the neptune.json configuration of the project.
+    It must also be provisioned using 'provision_resources' before querying it.
+    """
+    client = Client()
+
+    if validation_result := validate_neptune_json(neptune_json_path):
+        return validation_result
+
+    project_name = _get_project_name_from_neptune_json(neptune_json_path)
+
+    project = client.get_project(project_name)
+    if project is None:
+        log.error(f"Project '{project_name}' not found; was it deployed?")
+        return {
+            "status": "error",
+            "message": f"Project '{project_name}' not found; did you deploy it?",
+            "next_step": "deploy the project using the 'deploy_project' command",
+        }
+
+    database_resource = next(
+        (res for res in project.resources if res.kind == "Database"),
+        None,
+    )
+    if database_resource is None:
+        log.error(f"Database resource not found in project '{project_name}'")
+        return {
+            "status": "error",
+            "message": f"Database resource not found in project '{project_name}'",
+            "next_step": "ensure the database is defined in 'neptune.json' and provisioned with 'provision_resources'",
+        }
+
+    response = client.query_database(
+        project_name,
+        database_resource.name,
+        QueryDatabaseRequest(table=table_name, where_clause=where_clause if where_clause else None),
+    )
+    return response
+
+
+def _get_project_name_from_neptune_json(neptune_json_path: str) -> str:
+    with open(neptune_json_path, "r") as f:
+        project_data = f.read()
+
+    project_request = PutProjectRequest.model_validate_json(project_data)
+    return project_request.name
 
 
 async def list_tools() -> list[dict[str, Any]]:

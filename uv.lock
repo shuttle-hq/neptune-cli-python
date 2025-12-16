@@ -579,7 +579,7 @@ wheels = [
 [[package]]
 name = "neptune-common"
 version = "0.1.0"
-source = { git = "https://github.com/shuttle-hq/neptune-common.git?rev=main#ca51ecf140770527ec240ce2441fecd5692f20a3" }
+source = { git = "https://github.com/shuttle-hq/neptune-common.git?rev=IP%2Fdb-query-endpoint#a6c9f4d3b6d741e667c874ac3c7cc69753bb351b" }
 dependencies = [
     { name = "pydantic" },
 ]
@@ -610,7 +610,7 @@ requires-dist = [
     { name = "click", specifier = ">=8.1.0" },
     { name = "fastmcp", specifier = ">=2.13.0.2" },
     { name = "loguru", specifier = ">=0.7.3" },
-    { name = "neptune-common", git = "https://github.com/shuttle-hq/neptune-common.git?rev=main" },
+    { name = "neptune-common", git = "https://github.com/shuttle-hq/neptune-common.git?rev=IP%2Fdb-query-endpoint" },
     { name = "packaging", specifier = ">=21.0" },
     { name = "platformdirs", specifier = ">=4.5.0" },
     { name = "pydantic-settings", specifier = ">=2.11.0" },
