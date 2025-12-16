@@ -7,8 +7,8 @@ from neptune_mcp.mcp import mcp as mcp_server
 
 @click.group()
 def cli():
-    """AI-native cloud platform for your backend"""
-    pass
+    """Start a Neptune MCP server (stdio) for the current project"""
+    mcp_server.run()
 
 
 @cli.command()
