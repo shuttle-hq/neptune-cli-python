@@ -11,6 +11,7 @@ from neptune_common import (
     QueryDatabaseRequest,
 )
 import requests
+import httpx
 
 from neptune_mcp.config import SETTINGS
 
@@ -59,6 +60,12 @@ class Client:
         response.raise_for_status()
         return PostDeploymentResponse.model_validate(response.json())
 
+    async def create_deployment_async(self, project_name: str) -> PostDeploymentResponse:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(self._mk_url(f"/project/{project_name}/deploy"), headers=self._get_headers())
+            response.raise_for_status()
+            return PostDeploymentResponse.model_validate(response.json())
+
     def get_deployment(self, project_name: str, revision: str | int = "latest") -> PostDeploymentResponse:
         response = requests.get(
             self._mk_url(f"/project/{project_name}/deploy/{revision}"),
@@ -66,6 +73,15 @@ class Client:
         )
         response.raise_for_status()
         return PostDeploymentResponse.model_validate(response.json())
+
+    async def get_deployment_async(self, project_name: str, revision: str | int = "latest") -> PostDeploymentResponse:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                self._mk_url(f"/project/{project_name}/deploy/{revision}"),
+                headers=self._get_headers(),
+            )
+            response.raise_for_status()
+            return PostDeploymentResponse.model_validate(response.json())
 
     def get_logs(self, project_name: str) -> GetLogsResponse:
         response = requests.get(self._mk_url(f"/project/{project_name}/logs"), headers=self._get_headers())

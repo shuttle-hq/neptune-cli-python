@@ -25,10 +25,12 @@ packages_to_collect = [
     'requests',
     'certifi',
     'anyio',
+    'aiofiles',
     'starlette',
     'uvicorn',
     'httpx',
     'httpcore',
+    'h11',
     'sse_starlette',
     'mcp',
     # fastmcp dependencies
