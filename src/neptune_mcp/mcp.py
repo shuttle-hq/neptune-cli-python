@@ -188,6 +188,19 @@ secret = response['SecretString']
 ```
 """,
         }
+    elif kind == "Database":
+        return {
+            "description": "Managed database for your applications.",
+            "neptune_json_configuration": """
+To add a database to a project, add the following to 'resources' in 'neptune.json':
+```json
+{
+    "kind": "Database",
+    "name": "<database_name>"
+}
+```
+""",
+        }
     else:
         return {
             "error": "Unknown resource kind",
@@ -367,9 +380,9 @@ async def deploy_project(neptune_json_path: str) -> dict[str, Any]:
         ]
         login_process = await asyncio.create_subprocess_shell(
             " ".join(login_cmd),
-            stdin = asyncio.subprocess.PIPE,
-            stdout  = asyncio.subprocess.DEVNULL,
-            stderr  = asyncio.subprocess.STDOUT,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.STDOUT,
             cwd=project_dir,
         )
 
@@ -431,7 +444,8 @@ async def deploy_project(neptune_json_path: str) -> dict[str, Any]:
                 "next_step": "check the deployment status with 'get_deployment_status' and investigate any issues",
             }
         await asyncio.sleep(2)
-        deployment = await client.get_deployment_async(project_request.name, revision=deployment.revision)
+        async with asyncio.timeout(10):
+            deployment = await client.get_deployment_async(project_request.name, revision=deployment.revision)
 
     if deployment.status != "Deployed":
         log.error(f"Deployment failed with status: {deployment.status}")
