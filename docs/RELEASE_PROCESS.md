@@ -28,16 +28,6 @@ This document explains the complete release workflow for Neptune MCP, including 
 
 ### Step 1: Bump the Version
 
-**Important**: Create a new branch and set upstream before running the bump script to avoid pushing directly to main:
-
-```bash
-# Create a new branch for the version bump
-git checkout -b chore/bump-v0.1.3
-
-# Push the branch to remote and set upstream
-git push -u origin chore/bump-v0.1.3
-```
-
 **Dry Run First** (Recommended):
 Preview what would be changed without making actual changes:
 
@@ -51,8 +41,11 @@ Example output:
 Latest tag: v0.1.2
 Bumping patch version: 0.1.2 -> 0.1.3
 
+Currently on 'main' branch
+[DRY RUN] Would create and switch to branch: chore/bump-v0.1.3
 [DRY RUN] Would update pyproject.toml to version: 0.1.3
 [DRY RUN] Would create tag: v0.1.3
+[DRY RUN] Would push branch 'chore/bump-v0.1.3' with upstream tracking
 [DRY RUN] Would push tag to remote
 ```
 
@@ -69,24 +62,29 @@ python scripts/bump_version.py --minor
 python scripts/bump_version.py --major
 ```
 
-After the script runs, it will commit the version changes and push the branch and tag to the remote. You can then create a pull request to merge the version bump into main.
+The script automatically handles branch creation and pushing. After the script runs, you can create a pull request to merge the version bump into main.
 
 **What this script does**:
 
-1. Retrieves the latest git tag (e.g., `v0.1.2`)
-2. Parses and increments the version based on the flag
-3. Updates `version` in [pyproject.toml](../pyproject.toml)
-4. Updates [uv.lock](../uv.lock) to reflect the new version
-5. Commits the changes with message: `Bump version to X.Y.Z`
-6. Creates a new git tag (e.g., `v0.1.3`)
-7. Pushes both the commit and tag to the remote repository
+1. Detects if you're on the main branch
+2. If on main, creates a new branch named `chore/bump-vX.Y.Z` and switches to it
+3. Retrieves the latest git tag (e.g., `v0.1.2`)
+4. Parses and increments the version based on the flag
+5. Updates `version` in [pyproject.toml](../pyproject.toml)
+6. Updates [uv.lock](../uv.lock) to reflect the new version
+7. Commits the changes with message: `Bump version to X.Y.Z`
+8. Pushes the branch to remote with upstream tracking
+9. Creates a new git tag (e.g., `v0.1.3`)
+10. Pushes the tag to the remote repository
 
 **Local Only**:
-To bump version without pushing to remote:
+To bump version without pushing to remote (useful for testing):
 
 ```bash
 python scripts/bump_version.py --patch --no-push
 ```
+
+**Note**: If you're already on a feature branch (not main), the script will use your current branch instead of creating a new one.
 
 ### Step 2: Automatic Build Trigger
 
@@ -202,12 +200,10 @@ For a complete release:
 
 -   [ ] Ensure working directory is clean
 -   [ ] Pull latest changes from main branch
--   [ ] Create a new branch (e.g., `git checkout -b chore/bump-v0.1.3`)
--   [ ] Push branch to remote and set upstream (e.g., `git push -u origin chore/bump-v0.1.3`)
 -   [ ] Run dry run first: `python scripts/bump_version.py --dry-run`
 -   [ ] Verify the dry run output looks correct
 -   [ ] Run `python scripts/bump_version.py` (or `--minor`/`--major`)
--   [ ] Script automatically commits, tags, and pushes
+-   [ ] Script automatically creates branch, commits, tags, and pushes
 -   [ ] Create a pull request to merge the version bump into main
 -   [ ] Merge the pull request
 -   [ ] GitHub Actions builds all platform binaries (triggered by tag)

@@ -103,6 +103,34 @@ def update_pyproject_toml(new_version):
     return True
 
 
+def get_current_branch():
+    """Get the current git branch name."""
+    result = run_command("git branch --show-current", check=False)
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip()
+
+
+def create_branch(branch_name):
+    """Create a new git branch and switch to it."""
+    result = run_command(f"git checkout -b {branch_name}", check=False)
+    if result.returncode != 0:
+        print(f"Error creating branch: {result.stderr}", file=sys.stderr)
+        return False
+    print(f"Created and switched to branch: {branch_name}")
+    return True
+
+
+def push_branch_with_upstream(branch_name):
+    """Push branch to remote and set upstream tracking."""
+    result = run_command(f"git push -u origin {branch_name}", check=False)
+    if result.returncode != 0:
+        print(f"Error pushing branch: {result.stderr}", file=sys.stderr)
+        return False
+    print(f"Pushed branch to remote with upstream tracking: {branch_name}")
+    return True
+
+
 def create_and_push_tag(tag_name, push=True):
     """Create git tag and optionally push to remote."""
     # Create the tag
@@ -162,10 +190,26 @@ def main():
 
     print(f"Bumping {bump_type} version: {format_version(current_version)} -> {new_version_str}")
 
+    # Check if we're on main/master branch
+    current_branch = get_current_branch()
+    if current_branch in ["main"]:
+        print(f"\nCurrently on '{current_branch}' branch")
+        branch_name = f"chore/bump-{new_tag}"
+
+        if args.dry_run:
+            print(f"[DRY RUN] Would create and switch to branch: {branch_name}")
+        else:
+            if not create_branch(branch_name):
+                sys.exit(1)
+    else:
+        print(f"\nCurrently on branch: {current_branch}")
+        branch_name = current_branch
+
     if args.dry_run:
         print(f"\n[DRY RUN] Would update pyproject.toml to version: {new_version_str}")
         print(f"[DRY RUN] Would create tag: {new_tag}")
         if not args.no_push:
+            print(f"[DRY RUN] Would push branch '{branch_name}' with upstream tracking")
             print("[DRY RUN] Would push tag to remote")
         return
 
@@ -197,19 +241,17 @@ def main():
 
     print("Committed version change")
 
+    # Push the branch with upstream tracking
+    if not args.no_push:
+        if not push_branch_with_upstream(branch_name):
+            sys.exit(1)
+
     # Create and push tag
     if not create_and_push_tag(new_tag, push=not args.no_push):
         sys.exit(1)
 
-    # Push the commit
-    if not args.no_push:
-        result = run_command("git push", check=False)
-        if result.returncode != 0:
-            print(f"Error pushing commit: {result.stderr}", file=sys.stderr)
-            sys.exit(1)
-        print("Pushed commit to remote")
-
     print(f"\n✓ Successfully bumped version to {new_version_str} ({new_tag})")
+    print(f"✓ Branch '{branch_name}' is ready for a pull request")
 
 
 if __name__ == "__main__":
