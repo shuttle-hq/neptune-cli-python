@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
+import httpx
 from neptune_common import (
     GetLogsResponse,
     GetProjectResponse,
@@ -11,7 +12,6 @@ from neptune_common import (
     QueryDatabaseRequest,
 )
 import requests
-import httpx
 
 from neptune_mcp.config import SETTINGS
 

@@ -6,11 +6,11 @@ Increments patch version by default, or minor/major with flags.
 
 import argparse
 import os
+from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
-from pathlib import Path
 
 
 def find_uv():
@@ -42,10 +42,10 @@ def get_latest_tag():
     if result.returncode != 0 or not result.stdout.strip():
         return None
 
-    tags = result.stdout.strip().split('\n')
+    tags = result.stdout.strip().split("\n")
     for tag in tags:
         # Find first tag that matches semver pattern
-        if re.match(r'^v?\d+\.\d+\.\d+$', tag):
+        if re.match(r"^v?\d+\.\d+\.\d+$", tag):
             return tag
     return None
 
@@ -53,8 +53,8 @@ def get_latest_tag():
 def parse_version(version_str):
     """Parse version string into major, minor, patch."""
     # Remove 'v' prefix if present
-    version_str = version_str.lstrip('v')
-    match = re.match(r'^(\d+)\.(\d+)\.(\d+)$', version_str)
+    version_str = version_str.lstrip("v")
+    match = re.match(r"^(\d+)\.(\d+)\.(\d+)$", version_str)
     if not match:
         raise ValueError(f"Invalid version format: {version_str}")
     return tuple(map(int, match.groups()))
@@ -64,11 +64,11 @@ def bump_version(version, bump_type):
     """Bump version based on type (major, minor, patch)."""
     major, minor, patch = version
 
-    if bump_type == 'major':
+    if bump_type == "major":
         return (major + 1, 0, 0)
-    elif bump_type == 'minor':
+    elif bump_type == "minor":
         return (major, minor + 1, 0)
-    elif bump_type == 'patch':
+    elif bump_type == "patch":
         return (major, minor, patch + 1)
     else:
         raise ValueError(f"Invalid bump type: {bump_type}")
@@ -92,11 +92,7 @@ def update_pyproject_toml(new_version):
 
     # Update version line
     updated_content = re.sub(
-        r'^version\s*=\s*"[^"]+"',
-        f'version = "{new_version}"',
-        content,
-        count=1,
-        flags=re.MULTILINE
+        r'^version\s*=\s*"[^"]+"', f'version = "{new_version}"', content, count=1, flags=re.MULTILINE
     )
 
     if content == updated_content:
@@ -110,7 +106,7 @@ def update_pyproject_toml(new_version):
 def create_and_push_tag(tag_name, push=True):
     """Create git tag and optionally push to remote."""
     # Create the tag
-    result = run_command(f'git tag {tag_name}', check=False)
+    result = run_command(f"git tag {tag_name}", check=False)
     if result.returncode != 0:
         print(f"Error creating tag: {result.stderr}", file=sys.stderr)
         return False
@@ -119,11 +115,11 @@ def create_and_push_tag(tag_name, push=True):
 
     if push:
         # Push the tag to remote
-        result = run_command(f'git push origin {tag_name}', check=False)
+        result = run_command(f"git push origin {tag_name}", check=False)
         if result.returncode != 0:
             print(f"Error pushing tag: {result.stderr}", file=sys.stderr)
             # Delete the local tag if push failed
-            run_command(f'git tag -d {tag_name}', check=False)
+            run_command(f"git tag -d {tag_name}", check=False)
             return False
         print(f"Pushed tag to remote: {tag_name}")
 
@@ -131,45 +127,23 @@ def create_and_push_tag(tag_name, push=True):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Bump version in git tags and pyproject.toml"
-    )
-    parser.add_argument(
-        '--major',
-        action='store_true',
-        help='Bump major version (x.0.0)'
-    )
-    parser.add_argument(
-        '--minor',
-        action='store_true',
-        help='Bump minor version (0.x.0)'
-    )
-    parser.add_argument(
-        '--patch',
-        action='store_true',
-        help='Bump patch version (0.0.x) - default'
-    )
-    parser.add_argument(
-        '--no-push',
-        action='store_true',
-        help='Do not push tag to remote'
-    )
-    parser.add_argument(
-        '--dry-run',
-        action='store_true',
-        help='Show what would be done without making changes'
-    )
+    parser = argparse.ArgumentParser(description="Bump version in git tags and pyproject.toml")
+    parser.add_argument("--major", action="store_true", help="Bump major version (x.0.0)")
+    parser.add_argument("--minor", action="store_true", help="Bump minor version (0.x.0)")
+    parser.add_argument("--patch", action="store_true", help="Bump patch version (0.0.x) - default")
+    parser.add_argument("--no-push", action="store_true", help="Do not push tag to remote")
+    parser.add_argument("--dry-run", action="store_true", help="Show what would be done without making changes")
 
     args = parser.parse_args()
 
     # Determine bump type
-    bump_type = 'patch'  # default
+    bump_type = "patch"  # default
     if args.major:
-        bump_type = 'major'
+        bump_type = "major"
     elif args.minor:
-        bump_type = 'minor'
+        bump_type = "minor"
     elif args.patch:
-        bump_type = 'patch'
+        bump_type = "patch"
 
     # Get latest tag
     latest_tag = get_latest_tag()
@@ -192,7 +166,7 @@ def main():
         print(f"\n[DRY RUN] Would update pyproject.toml to version: {new_version_str}")
         print(f"[DRY RUN] Would create tag: {new_tag}")
         if not args.no_push:
-            print(f"[DRY RUN] Would push tag to remote")
+            print("[DRY RUN] Would push tag to remote")
         return
 
     # Update pyproject.toml
@@ -203,13 +177,13 @@ def main():
     # Update uv lock file
     print("Updating uv.lock...")
     uv_cmd = find_uv()
-    result = run_command(f'{uv_cmd} lock', check=False)
+    result = run_command(f"{uv_cmd} lock", check=False)
     if result.returncode != 0:
         print(f"Error updating uv.lock: {result.stderr}", file=sys.stderr)
         sys.exit(1)
 
     # Stage the pyproject.toml and uv.lock changes
-    result = run_command('git add pyproject.toml uv.lock', check=False)
+    result = run_command("git add pyproject.toml uv.lock", check=False)
     if result.returncode != 0:
         print(f"Error staging files: {result.stderr}", file=sys.stderr)
         sys.exit(1)
@@ -221,7 +195,7 @@ def main():
         print(f"Error committing version change: {result.stderr}", file=sys.stderr)
         sys.exit(1)
 
-    print(f"Committed version change")
+    print("Committed version change")
 
     # Create and push tag
     if not create_and_push_tag(new_tag, push=not args.no_push):
@@ -229,7 +203,7 @@ def main():
 
     # Push the commit
     if not args.no_push:
-        result = run_command('git push', check=False)
+        result = run_command("git push", check=False)
         if result.returncode != 0:
             print(f"Error pushing commit: {result.stderr}", file=sys.stderr)
             sys.exit(1)
@@ -238,5 +212,5 @@ def main():
     print(f"\n✓ Successfully bumped version to {new_version_str} ({new_tag})")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
